@@ -1,6 +1,23 @@
 <?php
 require_once __DIR__ . '/env.php';
+
+// Configuration des sessions pour fonctionner correctement sur Render avec HTTPS
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    // Configurer les paramètres de session avant de démarrer
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+               || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+               || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
+    
+    // Configurer les cookies de session pour HTTPS
+    session_set_cookie_params([
+        'lifetime' => 0, // Expire à la fermeture du navigateur (géré par notre TTL)
+        'path' => '/',
+        'domain' => '', // Laisse le navigateur déterminer le domaine
+        'secure' => $isHttps, // Secure en HTTPS uniquement
+        'httponly' => true, // Protection XSS
+        'samesite' => 'Lax' // Protection CSRF
+    ]);
+    
     session_start();
 }
 

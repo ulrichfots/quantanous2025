@@ -20,6 +20,14 @@ RUN echo '<VirtualHost *:8080>\n\
 # Copier les fichiers de l'application
 COPY . /var/www/html/
 
+# Créer un répertoire pour les sessions PHP
+RUN mkdir -p /var/lib/php/sessions
+RUN chown -R www-data:www-data /var/lib/php/sessions
+RUN chmod -R 755 /var/lib/php/sessions
+
+# Configurer PHP pour utiliser ce répertoire de session
+RUN echo 'session.save_path = "/var/lib/php/sessions"' >> /usr/local/etc/php/conf.d/sessions.ini
+
 # Définir les permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
