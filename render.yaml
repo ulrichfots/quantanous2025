@@ -1,8 +1,6 @@
 services:
   - type: web
     name: quantanous-pwa
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
     region: frankfurt
     plan: free
     healthCheckPath: /index.php
