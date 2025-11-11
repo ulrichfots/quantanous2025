@@ -194,7 +194,67 @@ Le fichier `api.php` contient une API REST simple :
 php -S localhost:8000
 ```
 
-### Option 2 : Serveur web (Production)
+### Option 2 : Render (Recommandé pour Production)
+
+Le projet contient un fichier `render.yaml` pour un déploiement automatique sur Render.
+
+#### Étapes de déploiement :
+
+1. **Créer un compte sur [Render](https://render.com)**
+
+2. **Connecter votre repository GitHub**
+   - Dans le dashboard Render, cliquez sur "New" → "Web Service"
+   - Connectez votre repository GitHub `ulrichfots/quantanous2025`
+   - Render détectera automatiquement le fichier `render.yaml`
+
+3. **Configurer les variables d'environnement**
+   
+   Dans le dashboard Render, allez dans "Environment" et ajoutez toutes les variables suivantes :
+   
+   **Back4App :**
+   - `BACK4APP_APP_ID` : Votre Application ID Back4App
+   - `BACK4APP_REST_KEY` : Votre REST API Key
+   - `BACK4APP_MASTER_KEY` : Votre Master Key
+   
+   **Stripe :**
+   - `STRIPE_PUBLISHABLE_KEY` : Votre clé publique Stripe
+   - `STRIPE_SECRET_KEY` : Votre clé secrète Stripe
+   - `STRIPE_WEBHOOK_SECRET` : Le secret de votre webhook Stripe
+   - `STRIPE_EMAIL_FROM` : Adresse email pour les reçus (ex: noreply@votredomaine.com)
+   - `STRIPE_SHIPPING_FEE` : `5.00` (déjà configuré dans render.yaml)
+   - `STRIPE_CURRENCY` : `eur` (déjà configuré dans render.yaml)
+   
+   **Google OAuth :**
+   - `GOOGLE_CLIENT_ID` : Votre Client ID Google OAuth
+   - `GOOGLE_ALLOWED_DOMAINS` : (optionnel) Domaines autorisés séparés par des virgules
+   - `GOOGLE_ALLOWED_EMAILS` : (optionnel) Emails autorisés séparés par des virgules
+   
+   **Base URL :**
+   - `BASE_URL` : Sera automatiquement défini par Render (pas besoin de le configurer)
+
+4. **Configurer le webhook Stripe**
+   - Une fois déployé, copiez l'URL de votre service Render (ex: `https://quantanous-pwa.onrender.com`)
+   - Dans le dashboard Stripe, allez dans "Developers" → "Webhooks"
+   - Ajoutez un endpoint : `https://votre-service.onrender.com/api.php/stripe-webhook`
+   - Sélectionnez les événements : `checkout.session.completed` et `invoice.payment_succeeded`
+   - Copiez le "Signing secret" et ajoutez-le dans Render comme `STRIPE_WEBHOOK_SECRET`
+
+5. **Déployer**
+   - Render déploiera automatiquement à chaque push sur la branche `main`
+   - La première fois, cliquez sur "Manual Deploy" → "Deploy latest commit"
+
+6. **Vérifier le déploiement**
+   - Une fois déployé, votre application sera accessible sur `https://votre-service.onrender.com`
+   - Testez l'authentification Google
+   - Testez les paiements Stripe
+   - Vérifiez que les webhooks fonctionnent
+
+#### Notes importantes pour Render :
+- Le plan gratuit peut avoir un "spin down" après 15 minutes d'inactivité (première requête peut être lente)
+- Pour éviter cela, utilisez un service de "ping" gratuit (ex: UptimeRobot) pour maintenir le service actif
+- Ou passez au plan payant pour un service toujours actif
+
+### Option 3 : Autres serveurs web (Production)
 - Apache avec mod_php
 - Nginx avec PHP-FPM
 - **Important : HTTPS obligatoire pour PWA en production**

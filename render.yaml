@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: quantanous-pwa
+    env: php
+    region: frankfurt
+    plan: free
+    buildCommand: ""
+    startCommand: php -S 0.0.0.0:$PORT -t .
+    healthCheckPath: /index.php
+    envVars:
+      # Back4App Configuration
+      - key: BACK4APP_API_URL
+        value: https://parseapi.back4app.com
+      - key: BACK4APP_APP_ID
+        sync: false  # À définir dans le dashboard Render
+      - key: BACK4APP_REST_KEY
+        sync: false  # À définir dans le dashboard Render
+      - key: BACK4APP_MASTER_KEY
+        sync: false  # À définir dans le dashboard Render
+      
+      # Stripe Configuration
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false  # À définir dans le dashboard Render
+      - key: STRIPE_SECRET_KEY
+        sync: false  # À définir dans le dashboard Render
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # À définir dans le dashboard Render
+      - key: STRIPE_SHIPPING_FEE
+        value: "5.00"
+      - key: STRIPE_CURRENCY
+        value: "eur"
+      - key: STRIPE_COMPANY_NAME
+        value: "quantanous 2025"
+      - key: STRIPE_EMAIL_FROM
+        sync: false  # À définir dans le dashboard Render (ex: noreply@votredomaine.com)
+      - key: STRIPE_EMAIL_REPLY_TO
+        sync: false  # Optionnel
+      - key: STRIPE_EMAIL_BCC
+        sync: false  # Optionnel
+      
+      # Google OAuth Configuration
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # À définir dans le dashboard Render
+      
+      # Base URL (sera automatiquement défini par Render, mais peut être surchargé)
+      - key: BASE_URL
+        fromService:
+          type: web
+          name: quantanous-pwa
+          property: host
+
