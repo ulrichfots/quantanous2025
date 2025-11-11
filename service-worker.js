@@ -41,6 +41,22 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Ignorer les requêtes non-GET (POST, PUT, DELETE, etc.)
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  // Ignorer les requêtes vers des schémas non-HTTP(S) (chrome-extension, file, etc.)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Ignorer les requêtes vers d'autres origines (sauf si nécessaire)
+  // On garde uniquement les requêtes vers notre origine
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // Stratégie réseau d'abord pour les pages dynamiques PHP afin d'éviter le contenu obsolète.
   const isDynamicPhp =
     request.method === 'GET' &&
@@ -52,8 +68,17 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            // Vérifier que la requête peut être mise en cache
+            if (request.method === 'GET' && url.protocol.startsWith('http') && url.origin === self.location.origin) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                try {
+                  cache.put(request, responseClone);
+                } catch (error) {
+                  // Ignorer les erreurs de cache (requêtes non cacheables)
+                }
+              });
+            }
           }
           return networkResponse;
         })
@@ -75,8 +100,17 @@ self.addEventListener('fetch', (event) => {
             return networkResponse;
           }
 
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+          // Vérifier que la requête peut être mise en cache
+          if (request.method === 'GET' && url.protocol.startsWith('http') && url.origin === self.location.origin) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              try {
+                cache.put(request, responseToCache);
+              } catch (error) {
+                // Ignorer les erreurs de cache (requêtes non cacheables)
+              }
+            });
+          }
 
           return networkResponse;
         })

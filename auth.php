@@ -12,8 +12,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
     
     // Configurer les cookies de session pour HTTPS
-    // Lifetime = TTL de la session Google (30 minutes) + 5 minutes de marge
-    $cookieLifetime = (60 * 30) + (60 * 5); // 35 minutes
+    // Lifetime = TTL de la session Google (1 heure) + 5 minutes de marge
+    $cookieLifetime = (60 * 60) + (60 * 5); // 65 minutes
     
     session_set_cookie_params([
         'lifetime' => $cookieLifetime, // Durée de vie du cookie
@@ -37,7 +37,7 @@ const PIN_SESSION_TTL = 60 * 60 * 12; // 12 heures (utilisé uniquement pour val
 
 const GOOGLE_SESSION_KEY = 'google_user';
 const GOOGLE_SESSION_TIME_KEY = 'google_user_time';
-const GOOGLE_SESSION_TTL = 60 * 30; // 30 minutes - durée de validité de la session Google
+const GOOGLE_SESSION_TTL = 60 * 60; // 1 heure - durée de validité de la session Google
 
 if (!function_exists('google_get_config')) {
     function google_get_config(): array

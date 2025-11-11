@@ -179,6 +179,8 @@ if (google_is_authenticated()) {
                 callback: handleCredentialResponse,
                 auto_select: false,
                 cancel_on_tap_outside: true,
+                // Configuration FedCM (pour réduire les avertissements)
+                use_fedcm_for_prompt: false, // Désactivé pour l'instant, activer quand FedCM sera obligatoire
             });
 
             const wrapper = document.getElementById('gSignInWrapper');
