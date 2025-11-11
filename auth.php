@@ -4,19 +4,28 @@ require_once __DIR__ . '/env.php';
 // Configuration des sessions pour fonctionner correctement sur Render avec HTTPS
 if (session_status() !== PHP_SESSION_ACTIVE) {
     // Configurer les paramètres de session avant de démarrer
+    // Détection HTTPS (y compris via proxy Render)
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
-               || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-               || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
+               || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+               || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+               || (!empty($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] === '443')
+               || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
     
     // Configurer les cookies de session pour HTTPS
+    // Lifetime = TTL de la session Google (30 minutes) + 5 minutes de marge
+    $cookieLifetime = (60 * 30) + (60 * 5); // 35 minutes
+    
     session_set_cookie_params([
-        'lifetime' => 0, // Expire à la fermeture du navigateur (géré par notre TTL)
+        'lifetime' => $cookieLifetime, // Durée de vie du cookie
         'path' => '/',
         'domain' => '', // Laisse le navigateur déterminer le domaine
         'secure' => $isHttps, // Secure en HTTPS uniquement
         'httponly' => true, // Protection XSS
         'samesite' => 'Lax' // Protection CSRF
     ]);
+    
+    // Configurer la durée de vie de la session PHP (gc_maxlifetime)
+    ini_set('session.gc_maxlifetime', $cookieLifetime);
     
     session_start();
 }
