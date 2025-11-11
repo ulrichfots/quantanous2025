@@ -10,6 +10,8 @@ const PIN_SESSION_VALUE_KEY = 'pin_verified_value';
 const PIN_SESSION_TTL = 60 * 60 * 12; // 12 heures (utilisé uniquement pour valider la saisie immédiate)
 
 const GOOGLE_SESSION_KEY = 'google_user';
+const GOOGLE_SESSION_TIME_KEY = 'google_user_time';
+const GOOGLE_SESSION_TTL = 60 * 30; // 30 minutes - durée de validité de la session Google
 
 if (!function_exists('google_get_config')) {
     function google_get_config(): array
@@ -37,7 +39,23 @@ if (!function_exists('google_get_config')) {
 if (!function_exists('google_is_authenticated')) {
     function google_is_authenticated(): bool
     {
-        return !empty($_SESSION[GOOGLE_SESSION_KEY]) && is_array($_SESSION[GOOGLE_SESSION_KEY]);
+        if (empty($_SESSION[GOOGLE_SESSION_KEY]) || !is_array($_SESSION[GOOGLE_SESSION_KEY])) {
+            return false;
+        }
+
+        // Vérifier si la session a expiré
+        $loginTime = $_SESSION[GOOGLE_SESSION_TIME_KEY] ?? 0;
+        if ($loginTime <= 0) {
+            return false;
+        }
+
+        // Vérifier si la session a expiré (TTL)
+        if (GOOGLE_SESSION_TTL > 0 && (time() - $loginTime) > GOOGLE_SESSION_TTL) {
+            google_logout();
+            return false;
+        }
+
+        return true;
     }
 }
 
@@ -51,7 +69,7 @@ if (!function_exists('google_current_user')) {
 if (!function_exists('google_logout')) {
     function google_logout(): void
     {
-        unset($_SESSION[GOOGLE_SESSION_KEY]);
+        unset($_SESSION[GOOGLE_SESSION_KEY], $_SESSION[GOOGLE_SESSION_TIME_KEY]);
         session_regenerate_id(true);
     }
 }
@@ -71,6 +89,7 @@ if (!function_exists('google_store_user')) {
 
         session_regenerate_id(true);
         $_SESSION[GOOGLE_SESSION_KEY] = $user;
+        $_SESSION[GOOGLE_SESSION_TIME_KEY] = time(); // Stocker le timestamp de connexion
     }
 }
 

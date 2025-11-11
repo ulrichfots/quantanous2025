@@ -112,19 +112,3 @@ window.addEventListener('offline', () => {
     }
 });
 
-const googleLogoutBeacon = () => {
-    const url = 'api.php/google-logout';
-    try {
-        if (navigator.sendBeacon) {
-            const payload = new Blob(['{"auto":"1"}'], { type: 'application/json' });
-            navigator.sendBeacon(url, payload);
-        } else {
-            fetch(url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ auto: true }) });
-        }
-    } catch (error) {
-    }
-};
-
-window.addEventListener('pagehide', googleLogoutBeacon);
-window.addEventListener('beforeunload', googleLogoutBeacon);
-
