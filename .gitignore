@@ -1,0 +1,28 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration locaux
+.htpasswd
+config.local.php
+
+# Logs
+*.log
+error_log
+.env
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules (si vous utilisez des outils)
+node_modules/
+package-lock.json
+
