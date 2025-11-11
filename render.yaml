@@ -1,11 +1,10 @@
 services:
   - type: web
     name: quantanous-pwa
-    env: php
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     region: frankfurt
     plan: free
-    buildCommand: ""
-    startCommand: php -S 0.0.0.0:$PORT -t .
     healthCheckPath: /index.php
     envVars:
       # Back4App Configuration
