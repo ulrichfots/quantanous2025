@@ -89,7 +89,28 @@ class EmailHelper
             $port = $this->smtpPort;
             $secure = $this->smtpSecure === 'ssl' ? 'ssl://' : '';
             
-            $socket = @fsockopen($secure . $host, $port, $errno, $errstr, 30);
+            // Pour SendGrid, essayer d'abord avec stream_socket_client qui gère mieux SSL/TLS
+            $context = stream_context_create([
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true,
+                ],
+            ]);
+            
+            $socket = @stream_socket_client(
+                ($secure ?: 'tcp://') . $host . ':' . $port,
+                $errno,
+                $errstr,
+                30,
+                STREAM_CLIENT_CONNECT,
+                $context
+            );
+            
+            // Fallback sur fsockopen si stream_socket_client échoue
+            if (!$socket) {
+                $socket = @fsockopen($secure . $host, $port, $errno, $errstr, 30);
+            }
             if (!$socket) {
                 error_log("EmailHelper SMTP: Échec de connexion à {$host}:{$port} - {$errstr} ({$errno})");
                 return false;

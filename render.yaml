@@ -42,9 +42,9 @@ services:
       
       # SMTP Configuration (pour l'envoi d'emails)
       - key: SMTP_HOST
-        value: smtp.gmail.com  # Ou smtp.mailgun.org, smtp.sendgrid.net, etc.
+        value: smtp.sendgrid.net  # SendGrid SMTP
       - key: SMTP_PORT
-        value: "587"  # 587 pour TLS, 465 pour SSL
+        value: "2525"  # Port 2525 pour SendGrid (alternative si 587 est bloqué), 587 pour TLS, 465 pour SSL
       - key: SMTP_USER
         sync: false  # À définir dans le dashboard Render (ex: ton-email@gmail.com)
       - key: SMTP_PASS
