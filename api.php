@@ -446,10 +446,12 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
 
     $sendInvoiceEmail = function (array $invoice) use ($stripe, $emailHelper): bool {
         if (!$emailHelper) {
+            error_log('Webhook Stripe: EmailHelper non disponible');
             return false;
         }
 
         if (($invoice['paid'] ?? false) !== true) {
+            error_log('Webhook Stripe: Facture non payée, email non envoyé');
             return false;
         }
 
@@ -459,6 +461,11 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
             if (($subscription['success'] ?? false) && isset($subscription['data']['metadata'])) {
                 $metadata = $subscription['data']['metadata'];
             }
+        }
+
+        // Récupérer les métadonnées depuis les line_items si elles ne sont pas dans invoice.metadata
+        if (empty($metadata) && !empty($invoice['lines']['data'][0]['metadata'])) {
+            $metadata = $invoice['lines']['data'][0]['metadata'];
         }
 
         $type = $metadata['type'] ?? 'don_regulier';
@@ -479,12 +486,15 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
 
         $customerEmail = $invoice['customer_email'] ?? ($invoice['customer_details']['email'] ?? '');
         if (empty($customerEmail)) {
+            error_log('Webhook Stripe: Email client manquant dans la facture');
             return false;
         }
 
         $customerName = $invoice['customer_name'] ?? trim(($metadata['prenom'] ?? '') . ' ' . ($metadata['nom'] ?? ''));
 
-        return $emailHelper->sendReceipt([
+        error_log('Webhook Stripe: Tentative d\'envoi d\'email à ' . $customerEmail . ' pour facture ' . ($invoice['id'] ?? 'inconnue'));
+
+        $result = $emailHelper->sendReceipt([
             'to' => $customerEmail,
             'type' => $type,
             'amount' => $amount,
@@ -496,6 +506,14 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
             'period_start' => $periodStart,
             'period_end' => $periodEnd,
         ]);
+
+        if (!$result) {
+            error_log('Webhook Stripe: Échec de l\'envoi de l\'email à ' . $customerEmail);
+        } else {
+            error_log('Webhook Stripe: Email envoyé avec succès à ' . $customerEmail);
+        }
+
+        return $result;
     };
 
     $eventType = $event['type'] ?? '';

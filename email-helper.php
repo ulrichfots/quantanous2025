@@ -9,6 +9,11 @@ class EmailHelper
     private $replyTo;
     private $bcc;
     private $companyName;
+    private $smtpHost;
+    private $smtpPort;
+    private $smtpUser;
+    private $smtpPass;
+    private $smtpSecure;
 
     public function __construct()
     {
@@ -21,10 +26,17 @@ class EmailHelper
         $this->replyTo = $config['email_reply_to'] ?? null;
         $this->bcc = $config['email_bcc'] ?? null;
         $this->companyName = $config['company_name'] ?? 'Et Tout et Tout';
+        
+        // Configuration SMTP depuis les variables d'environnement
+        $this->smtpHost = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+        $this->smtpPort = (int)(getenv('SMTP_PORT') ?: 587);
+        $this->smtpUser = getenv('SMTP_USER') ?: '';
+        $this->smtpPass = getenv('SMTP_PASS') ?: '';
+        $this->smtpSecure = getenv('SMTP_SECURE') ?: 'tls'; // 'tls' ou 'ssl'
     }
 
     /**
-     * Envoie un e-mail multipart (texte + HTML).
+     * Envoie un e-mail multipart (texte + HTML) via SMTP.
      */
     public function sendEmail(string $to, string $subject, string $htmlBody, ?string $textBody = null): bool
     {
@@ -33,6 +45,173 @@ class EmailHelper
             return false;
         }
 
+        // Si SMTP n'est pas configuré, essayer mail() en fallback
+        if (empty($this->smtpUser) || empty($this->smtpPass)) {
+            error_log('EmailHelper: SMTP non configuré, tentative avec mail()');
+            return $this->sendEmailViaMail($to, $subject, $htmlBody, $textBody);
+        }
+
+        return $this->sendEmailViaSMTP($to, $subject, $htmlBody, $textBody);
+    }
+
+    /**
+     * Envoie un email via SMTP.
+     */
+    private function sendEmailViaSMTP(string $to, string $subject, string $htmlBody, ?string $textBody = null): bool
+    {
+        try {
+            $boundary = md5(uniqid((string) microtime(true), true));
+
+            if ($textBody === null || $textBody === '') {
+                $textBody = strip_tags(preg_replace('/<br\s*\/?>(?=.)/i', "\n", $htmlBody));
+            }
+
+            $message  = "--{$boundary}\r\n";
+            $message .= "Content-Type: text/plain; charset=UTF-8\r\n\r\n" . $textBody . "\r\n";
+            $message .= "--{$boundary}\r\n";
+            $message .= "Content-Type: text/html; charset=UTF-8\r\n\r\n" . $htmlBody . "\r\n";
+            $message .= "--{$boundary}--";
+
+            $encodedSubject = mb_encode_mimeheader($subject, 'UTF-8');
+            $fromName = $this->companyName;
+            $fromEmail = $this->from;
+
+            // Connexion SMTP
+            $host = $this->smtpHost;
+            $port = $this->smtpPort;
+            $secure = $this->smtpSecure === 'ssl' ? 'ssl://' : '';
+            
+            $socket = @fsockopen($secure . $host, $port, $errno, $errstr, 30);
+            if (!$socket) {
+                error_log("EmailHelper SMTP: Échec de connexion à {$host}:{$port} - {$errstr} ({$errno})");
+                return false;
+            }
+
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '220') {
+                error_log("EmailHelper SMTP: Réponse serveur inattendue: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // EHLO
+            fputs($socket, "EHLO " . $host . "\r\n");
+            $response = '';
+            while ($line = fgets($socket, 515)) {
+                $response .= $line;
+                if (substr($line, 3, 1) === ' ') break;
+            }
+
+            // STARTTLS si TLS
+            if ($this->smtpSecure === 'tls') {
+                fputs($socket, "STARTTLS\r\n");
+                $response = fgets($socket, 515);
+                if (substr($response, 0, 3) !== '220') {
+                    error_log("EmailHelper SMTP: STARTTLS échoué: {$response}");
+                    fclose($socket);
+                    return false;
+                }
+                stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                fputs($socket, "EHLO " . $host . "\r\n");
+                $response = '';
+                while ($line = fgets($socket, 515)) {
+                    $response .= $line;
+                    if (substr($line, 3, 1) === ' ') break;
+                }
+            }
+
+            // Authentification
+            fputs($socket, "AUTH LOGIN\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '334') {
+                error_log("EmailHelper SMTP: AUTH LOGIN refusé: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            fputs($socket, base64_encode($this->smtpUser) . "\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '334') {
+                error_log("EmailHelper SMTP: Nom d'utilisateur refusé");
+                fclose($socket);
+                return false;
+            }
+
+            fputs($socket, base64_encode($this->smtpPass) . "\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '235') {
+                error_log("EmailHelper SMTP: Authentification échouée: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // MAIL FROM
+            fputs($socket, "MAIL FROM: <{$fromEmail}>\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '250') {
+                error_log("EmailHelper SMTP: MAIL FROM échoué: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // RCPT TO
+            fputs($socket, "RCPT TO: <{$to}>\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '250') {
+                error_log("EmailHelper SMTP: RCPT TO échoué: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // DATA
+            fputs($socket, "DATA\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '354') {
+                error_log("EmailHelper SMTP: DATA refusé: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // Headers
+            $headers = "From: {$fromName} <{$fromEmail}>\r\n";
+            $headers .= "To: <{$to}>\r\n";
+            if (!empty($this->replyTo)) {
+                $headers .= "Reply-To: {$this->replyTo}\r\n";
+            }
+            if (!empty($this->bcc)) {
+                $headers .= "Bcc: {$this->bcc}\r\n";
+            }
+            $headers .= "Subject: {$encodedSubject}\r\n";
+            $headers .= "MIME-Version: 1.0\r\n";
+            $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
+            $headers .= "\r\n";
+
+            fputs($socket, $headers . $message . "\r\n.\r\n");
+            $response = fgets($socket, 515);
+            if (substr($response, 0, 3) !== '250') {
+                error_log("EmailHelper SMTP: Envoi échoué: {$response}");
+                fclose($socket);
+                return false;
+            }
+
+            // QUIT
+            fputs($socket, "QUIT\r\n");
+            fclose($socket);
+
+            error_log("EmailHelper SMTP: Email envoyé avec succès à {$to}");
+            return true;
+
+        } catch (Throwable $e) {
+            error_log("EmailHelper SMTP: Exception: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fallback: envoie un email via mail() (si disponible).
+     */
+    private function sendEmailViaMail(string $to, string $subject, string $htmlBody, ?string $textBody = null): bool
+    {
         $boundary = md5(uniqid((string) microtime(true), true));
 
         $headers = "From: {$this->from}\r\n";
@@ -56,7 +235,7 @@ class EmailHelper
         $body .= "--{$boundary}--";
 
         $encodedSubject = mb_encode_mimeheader($subject, 'UTF-8');
-        $sent = mail($to, $encodedSubject, $body, $headers);
+        $sent = @mail($to, $encodedSubject, $body, $headers);
 
         if (!$sent) {
             error_log('EmailHelper: échec de l\'envoi du mail à ' . $to);
