@@ -57,6 +57,21 @@
     <!-- Overlay pour fermer le menu -->
     <div class="menu-overlay" id="menuOverlay"></div>
 
+    <!-- Modal de confirmation de paiement -->
+    <div class="payment-success-modal" id="paymentSuccessModal">
+        <div class="payment-success-content">
+            <div class="payment-success-icon">✓</div>
+            <h2 class="payment-success-title">Paiement réussi !</h2>
+            <p class="payment-success-message">
+                Votre paiement a été effectué avec succès.<br>
+                Un reçu vous a été envoyé par email.
+            </p>
+            <p class="payment-success-spam">
+                💡 Pensez à vérifier vos spams si vous ne recevez pas l'email.
+            </p>
+        </div>
+    </div>
+
     <!-- Contenu principal -->
     <main class="main-content">
         <!-- Section graphique -->
@@ -120,5 +135,6 @@
     <!-- JavaScript -->
     <script src="assets/js/app.js"></script>
     <script src="assets/js/install.js"></script>
+    <script src="assets/js/payment-success.js"></script>
 </body>
 </html>

@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const descriptionInput = document.getElementById('projectDescription');
     const priceInput = document.getElementById('projectCost');
     const tvaCheckbox = document.getElementById('tvaIncluse');
+    const quantityInput = document.getElementById('projectQuantity');
+    const emailInput = document.getElementById('projectEmail');
     const imagesInput = document.getElementById('projectImages');
     const imagesPreviewList = document.getElementById('imagesPreviewList');
     const imagesPreviewEmpty = document.getElementById('imagesPreviewEmpty');
@@ -130,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionInput.value = project.description || '';
             priceInput.value = project.prix ?? '';
             tvaCheckbox.checked = Boolean(project.tva_incluse);
+            quantityInput.value = project.quantite ?? 0;
+            emailInput.value = project.email_alerte || '';
 
             currentImages = (project.images || []).map((data) => ({
                 id: generateId(),
@@ -216,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = descriptionInput.value.trim();
             const prix = parseFloat(priceInput.value);
             const tvaIncluse = tvaCheckbox.checked;
+            const quantite = parseInt(quantityInput.value, 10) || 0;
+            const emailAlerte = emailInput.value.trim();
 
             if (!titre || !description || Number.isNaN(prix) || prix <= 0) {
                 alert('Veuillez remplir tous les champs correctement.');
@@ -236,6 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 description,
                 prix,
                 tva_incluse: tvaIncluse,
+                quantite: quantite,
+                email_alerte: emailAlerte || null,
                 images: imagesPayload,
                 image: imagesPayload[0] || '',
                 timestamp: new Date().toISOString()

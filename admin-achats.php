@@ -82,6 +82,16 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-achats.php');
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <input type="number" class="form-input" id="projectQuantity" name="quantite" placeholder="Quantité en stock" min="0" step="1" value="0">
+                        <p class="form-helper-text">Quantité disponible en stock (pour les alertes de réapprovisionnement)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="email" class="form-input" id="projectEmail" name="email_alerte" placeholder="Remplir un mail existant et accessible" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                        <p class="form-helper-text">Email pour recevoir les alertes de stock faible (en dessous de 5 unités)</p>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="add-project-btn">
                             AJOUTER UN PROJET
@@ -115,6 +125,8 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-achats.php');
                             'description' => $project['description'] ?? '',
                             'prix' => $project['prix'] ?? 0,
                             'tva_incluse' => $project['tva_incluse'] ?? false,
+                            'quantite' => $project['quantite'] ?? 0,
+                            'email_alerte' => $project['email_alerte'] ?? null,
                         ];
                         $projectDataAttr = htmlspecialchars(json_encode($projectPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
                         $previewImage = !empty($project['images'][0]) ? $project['images'][0] : ($project['image'] ?? 'assets/images/placeholder.jpg');
@@ -132,6 +144,12 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-achats.php');
                             <div class="project-price-info">
                                 <span class="project-tva"><?php echo ($project['tva_incluse'] ?? false) ? 'TVA incluse' : ''; ?></span>
                                 <span class="project-price"><?php echo number_format($project['prix'] ?? 0, 2, ',', ' '); ?> €</span>
+                            </div>
+                            <div class="project-stock-info">
+                                <span class="project-stock">Stock: <?php echo isset($project['quantite']) ? intval($project['quantite']) : 0; ?> unité(s)</span>
+                                <?php if (!empty($project['email_alerte'])): ?>
+                                    <span class="project-email">Email alerte: <?php echo htmlspecialchars($project['email_alerte']); ?></span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="project-actions">

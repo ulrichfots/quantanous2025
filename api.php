@@ -315,6 +315,7 @@ if ($path === '/create-checkout-session' && $method === 'POST') {
                     $productName = $project['titre'] ?? $productName;
                     $description = ($project['description'] ?? '') ?: $description;
                     $metadata['project_title'] = $project['titre'] ?? '';
+                    $metadata['project_id'] = $articleId; // Ajouter project_id pour la gestion du stock
                 }
             }
         }
@@ -444,6 +445,94 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
         ]);
     };
 
+    // Fonction pour gérer le stock et envoyer les alertes
+    $handleStockAndAlerts = function (array $session) use ($back4app, $emailHelper): void {
+        $metadata = $session['metadata'] ?? [];
+        $type = $metadata['type'] ?? '';
+        
+        // Ne traiter que les achats
+        if ($type !== 'achat') {
+            return;
+        }
+
+        $projectId = $metadata['project_id'] ?? '';
+        if (empty($projectId)) {
+            return;
+        }
+
+        // Récupérer le projet depuis Back4app
+        $projectResult = $back4app->getById('Project', $projectId);
+        if (!($projectResult['success'] ?? false) || empty($projectResult['data'])) {
+            error_log('Stock alert: Projet non trouvé - ID: ' . $projectId);
+            return;
+        }
+
+        $project = $projectResult['data'];
+        $currentQuantity = isset($project['quantite']) ? max(0, intval($project['quantite'])) : 0;
+        $emailAlerte = $project['email_alerte'] ?? null;
+        $projectTitle = $project['titre'] ?? 'Article';
+
+        // Décrémenter la quantité de 1
+        $newQuantity = max(0, $currentQuantity - 1);
+
+        // Mettre à jour le stock dans Back4app
+        $updateResult = $back4app->update('Project', $projectId, [
+            'quantite' => $newQuantity,
+            'updated_at' => date('c')
+        ]);
+
+        if (!($updateResult['success'] ?? false)) {
+            error_log('Stock alert: Erreur lors de la mise à jour du stock - ID: ' . $projectId);
+            return;
+        }
+
+        error_log("Stock alert: Stock mis à jour pour '{$projectTitle}' - Ancien: {$currentQuantity}, Nouveau: {$newQuantity}");
+
+        // Vérifier si le stock est en dessous de 5 et envoyer une alerte
+        if ($newQuantity < 5 && !empty($emailAlerte) && filter_var($emailAlerte, FILTER_VALIDATE_EMAIL)) {
+            $subject = "⚠️ Alerte de stock faible - {$projectTitle}";
+            $htmlBody = "
+                <html>
+                <head>
+                    <meta charset='UTF-8'>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .alert-box { background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                        .alert-title { color: #856404; font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+                        .info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                        .stock-value { font-size: 24px; font-weight: bold; color: #dc3545; }
+                        .action { background-color: #28a745; color: white; padding: 10px 20px; border-radius: 5px; margin-top: 20px; display: inline-block; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='alert-box'>
+                            <div class='alert-title'>⚠️ Alerte de stock faible</div>
+                            <p>Le stock de l'article suivant est maintenant en dessous de 5 unités :</p>
+                            <div class='info'>
+                                <strong>Article :</strong> {$projectTitle}<br>
+                                <strong>Stock actuel :</strong> <span class='stock-value'>{$newQuantity}</span> unité(s)
+                            </div>
+                            <p><strong>Action requise :</strong> Veuillez procéder au réapprovisionnement de cet article.</p>
+                            <p>Cet email est un rappel automatique. Vous recevrez un nouveau rappel lors de chaque achat tant que le stock reste en dessous de 5 unités.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            $textBody = "Alerte de stock faible\n\nArticle: {$projectTitle}\nStock actuel: {$newQuantity} unité(s)\n\nVeuillez procéder au réapprovisionnement.";
+
+            $emailSent = $emailHelper->sendEmail($emailAlerte, $subject, $htmlBody, $textBody);
+            
+            if ($emailSent) {
+                error_log("Stock alert: Email d'alerte envoyé à {$emailAlerte} pour '{$projectTitle}' (stock: {$newQuantity})");
+            } else {
+                error_log("Stock alert: Échec de l'envoi de l'email d'alerte à {$emailAlerte}");
+            }
+        }
+    };
+
     $sendInvoiceEmail = function (array $invoice) use ($stripe, $emailHelper): bool {
         if (!$emailHelper) {
             error_log('Webhook Stripe: EmailHelper non disponible');
@@ -524,6 +613,8 @@ if ($path === '/stripe-webhook' && $method === 'POST') {
         case 'checkout.session.completed':
             $session = $event['data']['object'] ?? [];
             $emailSent = $sendCheckoutSessionEmail($session);
+            // Gérer le stock et les alertes pour les achats
+            $handleStockAndAlerts($session);
             $message = 'Session checkout traitée';
             break;
         case 'invoice.payment_succeeded':
@@ -786,6 +877,8 @@ if ($path === '/add-project' && $method === 'POST') {
         'description' => $input['description'],
         'prix' => floatval($input['prix']),
         'tva_incluse' => $input['tva_incluse'] ?? false,
+        'quantite' => isset($input['quantite']) ? max(0, intval($input['quantite'])) : 0,
+        'email_alerte' => !empty($input['email_alerte']) ? filter_var($input['email_alerte'], FILTER_VALIDATE_EMAIL) : null,
         'image' => $primaryImage,
         'images' => $images,
         'titre_slug' => $titleSlug,
