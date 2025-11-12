@@ -23,6 +23,13 @@ if ($status === 'success') {
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
     
+    <!-- Protection contre les iframes (nécessaire pour Stripe Checkout) -->
+    <script>
+        if (window.self !== window.top) {
+            window.top.location = window.self.location;
+        }
+    </script>
+    
     <title>Paiement - quantanous 2025</title>
     
     <!-- Manifest -->

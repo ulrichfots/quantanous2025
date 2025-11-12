@@ -210,6 +210,7 @@ if (!function_exists('google_enforce_authentication')) {
             '/login.php',
             '/api.php/google-login',
             '/api.php/google-logout',
+            '/api.php/stripe-webhook', // Webhook Stripe - authentification via signature Stripe uniquement
         ];
 
         $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';

@@ -159,7 +159,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (response.ok && result.checkout_url) {
-                    window.location.href = result.checkout_url;
+                    // Vérifier que l'URL est valide et qu'il s'agit bien d'une URL Stripe Checkout
+                    const checkoutUrl = result.checkout_url;
+                    if (typeof checkoutUrl === 'string' && checkoutUrl.startsWith('https://checkout.stripe.com/')) {
+                        // Redirection directe vers Stripe Checkout (pas d'iframe)
+                        // Utiliser window.location.replace pour éviter que l'utilisateur puisse revenir en arrière
+                        window.location.replace(checkoutUrl);
+                    } else {
+                        throw new Error('URL de checkout invalide');
+                    }
                 } else {
                     const errorMessage = result.message || 'Une erreur est survenue lors de la préparation du paiement.';
                     alert(errorMessage);
