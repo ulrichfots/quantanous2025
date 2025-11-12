@@ -16,8 +16,8 @@
     <link rel="manifest" href="manifest.json">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="assets/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+    <link rel="icon" type="image/jpeg" href="assets/icons/photobackground.JPG">
+    <link rel="apple-touch-icon" href="assets/icons/photobackground.JPG">
     
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
