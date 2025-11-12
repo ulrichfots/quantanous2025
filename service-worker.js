@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mon-app-pwa-v3';
+const CACHE_NAME = 'mon-app-pwa-v4';
 const urlsToCache = [
   './',
   './index.php',

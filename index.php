@@ -61,12 +61,7 @@
     <main class="main-content">
         <!-- Section graphique -->
         <div class="graphic-section">
-            <div class="graffiti-text">
-                <span class="graffiti-et">ET</span>
-                <span class="graffiti-tout">TOUT</span>
-                <span class="graffiti-et2">ET</span>
-                <span class="graffiti-tout2">TOUT</span>
-            </div>
+            <img src="assets/icons/photobackground.JPG" alt="quantanous 2025" class="graphic-image">
         </div>
 
         <!-- Section de contenu -->

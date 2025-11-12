@@ -98,32 +98,23 @@ body {
 
 /* Section graphique graffiti */
 .graphic-section {
-    background-image: url('../icons/photobackground.JPG');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    padding: 30px 20px;
+    padding: 0;
     text-align: center;
     overflow: hidden;
     flex-shrink: 0;
     position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.graphic-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.7);
-    z-index: 0;
-}
-
-.graphic-section > * {
-    position: relative;
-    z-index: 1;
+.graphic-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
 }
 
 .graffiti-text {
