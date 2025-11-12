@@ -221,6 +221,10 @@ if ($path === '/create-checkout-session' && $method === 'POST') {
 
     $mode = 'payment';
     $shippingFee = $stripe->getDefaultShippingFee();
+    // Frais de livraison gratuits si montant > 60€ pour les achats
+    if ($from === 'achats' && $amount > 60.0) {
+        $shippingFee = 0.0;
+    }
     $productName = 'Paiement Et Tout et Tout';
     $description = sprintf('Paiement de %.2f €', $amount);
 

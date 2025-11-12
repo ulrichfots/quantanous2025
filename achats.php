@@ -70,12 +70,41 @@
                 // Afficher tous les articles
                 foreach ($articles as $article):
                 ?>
+                <?php
+                    $quantite = isset($article['quantite']) ? intval($article['quantite']) : 0;
+                    $stockClass = 'stock-';
+                    $stockText = '';
+                    if ($quantite === 0) {
+                        $stockClass .= 'rupture';
+                        $stockText = 'Rupture';
+                    } elseif ($quantite < 3) {
+                        $stockClass .= 'rouge';
+                        $stockText = $quantite . ' unité(s)';
+                    } elseif ($quantite <= 5) {
+                        $stockClass .= 'orange';
+                        $stockText = $quantite . ' unité(s)';
+                    } else {
+                        $stockClass .= 'vert';
+                        $stockText = $quantite . ' unité(s)';
+                    }
+                    $images = $article['images'] ?? [];
+                    if (empty($images) && !empty($article['image'])) {
+                        $images = [$article['image']];
+                    }
+                ?>
                 <div class="achat-item">
-                    <div class="achat-image-wrapper">
-                        <img src="<?php echo htmlspecialchars($article['image'] ?: 'assets/images/placeholder.jpg'); ?>" 
-                             alt="<?php echo htmlspecialchars($article['titre']); ?>" 
-                             class="achat-image"
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'120\'%3E%3Crect width=\'100\' height=\'120\' fill=\'%23E0E0E0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-family=\'Arial\' font-size=\'12\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'">
+                    <div class="achat-image-wrapper" data-images='<?php echo htmlspecialchars(json_encode($images), ENT_QUOTES, 'UTF-8'); ?>'>
+                        <?php if (!empty($images)): ?>
+                            <img src="<?php echo htmlspecialchars($images[0]); ?>" 
+                                 alt="<?php echo htmlspecialchars($article['titre']); ?>" 
+                                 class="achat-image"
+                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'120\'%3E%3Crect width=\'100\' height=\'120\' fill=\'%23E0E0E0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-family=\'Arial\' font-size=\'12\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'">
+                        <?php else: ?>
+                            <img src="assets/images/placeholder.jpg" 
+                                 alt="<?php echo htmlspecialchars($article['titre']); ?>" 
+                                 class="achat-image"
+                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'120\'%3E%3Crect width=\'100\' height=\'120\' fill=\'%23E0E0E0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-family=\'Arial\' font-size=\'12\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'">
+                        <?php endif; ?>
                     </div>
                     <div class="achat-content">
                         <h3 class="achat-title"><?php echo htmlspecialchars($article['titre']); ?></h3>
@@ -83,6 +112,9 @@
                         <div class="achat-price-info">
                             <span class="achat-tva"><?php echo ($article['tva_incluse'] ?? false) ? 'TVA incluse' : ''; ?></span>
                             <span class="achat-price"><?php echo number_format($article['prix'] ?? 0, 2, ',', ' '); ?> €</span>
+                        </div>
+                        <div class="achat-stock-info">
+                            <span class="stock-indicator <?php echo $stockClass; ?>"><?php echo htmlspecialchars($stockText); ?></span>
                         </div>
                     </div>
                     <button class="achat-donner-btn" data-article-id="<?php echo $article['id']; ?>" data-prix="<?php echo $article['prix']; ?>">
@@ -121,6 +153,17 @@
             <span class="nav-label">Pourquoi donner ?</span>
         </a>
     </nav>
+
+    <!-- Lightbox pour les images -->
+    <div class="image-lightbox" id="imageLightbox">
+        <button class="lightbox-close" id="lightboxClose">×</button>
+        <button class="lightbox-prev" id="lightboxPrev">‹</button>
+        <button class="lightbox-next" id="lightboxNext">›</button>
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="">
+            <div class="lightbox-counter" id="lightboxCounter"></div>
+        </div>
+    </div>
 
     <!-- JavaScript -->
     <script src="assets/js/app.js"></script>

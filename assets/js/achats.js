@@ -25,5 +25,120 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = `paiement.php?${params.toString()}`;
         });
     });
+
+    // Gestion de la lightbox pour les images
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    const imageWrappers = document.querySelectorAll('.achat-image-wrapper');
+
+    let currentImages = [];
+    let currentIndex = 0;
+
+    function openLightbox(images, index = 0) {
+        if (!images || images.length === 0) return;
+        
+        currentImages = images;
+        currentIndex = index;
+        updateLightbox();
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+        currentImages = [];
+        currentIndex = 0;
+    }
+
+    function updateLightbox() {
+        if (currentImages.length === 0) return;
+        
+        lightboxImage.src = currentImages[currentIndex];
+        lightboxCounter.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+        
+        lightboxPrev.style.display = currentImages.length > 1 ? 'flex' : 'none';
+        lightboxNext.style.display = currentImages.length > 1 ? 'flex' : 'none';
+        lightboxCounter.style.display = currentImages.length > 1 ? 'block' : 'none';
+    }
+
+    function nextImage() {
+        if (currentImages.length === 0) return;
+        currentIndex = (currentIndex + 1) % currentImages.length;
+        updateLightbox();
+    }
+
+    function prevImage() {
+        if (currentImages.length === 0) return;
+        currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+        updateLightbox();
+    }
+
+    // Ouvrir la lightbox au clic sur une image
+    imageWrappers.forEach(wrapper => {
+        const img = wrapper.querySelector('.achat-image');
+        if (img) {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const imagesJson = wrapper.dataset.images;
+                if (imagesJson) {
+                    try {
+                        const images = JSON.parse(imagesJson);
+                        if (images && images.length > 0) {
+                            openLightbox(images, 0);
+                        }
+                    } catch (error) {
+                    }
+                }
+            });
+        }
+    });
+
+    // Fermer la lightbox
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    // Navigation
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            nextImage();
+        });
+    }
+
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            prevImage();
+        });
+    }
+
+    // Fermer en cliquant sur le fond
+    if (lightbox) {
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+    }
+
+    // Navigation au clavier
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowRight') {
+            nextImage();
+        } else if (e.key === 'ArrowLeft') {
+            prevImage();
+        }
+    });
 });
 

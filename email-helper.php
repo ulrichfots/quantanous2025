@@ -30,7 +30,7 @@ class EmailHelper
         $this->from = $config['email_from'] ?? 'no-reply@example.com';
         $this->replyTo = $config['email_reply_to'] ?? null;
         $this->bcc = $config['email_bcc'] ?? null;
-        $this->companyName = $config['company_name'] ?? 'Et Tout et Tout';
+        $this->companyName = $config['company_name'] ?? 'quantanous 2025';
         
         // Configuration SMTP depuis les variables d'environnement
         $this->smtpHost = getenv('SMTP_HOST') ?: 'smtp.gmail.com';

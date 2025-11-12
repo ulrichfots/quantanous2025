@@ -30,11 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
         montantDisplay.textContent = `${parseFloat(montant).toFixed(2)} €`;
     }
     
-    // Adapter les messages selon l'origine
+    // Adapter les messages selon l'origine et le montant
     if (fromPage === 'don') {
         if (deliveryInfo) {
             deliveryInfo.style.display = 'none';
         }
+    } else if (fromPage === 'achats') {
+        // Mettre à jour le message de livraison selon le montant
+        const montantValue = parseFloat(montant);
+        if (deliveryInfo && montantValue > 60) {
+            deliveryInfo.textContent = 'Livraison gratuite pour les commandes supérieures à 60 €';
+            deliveryInfo.style.color = '#2E7D32';
+            deliveryInfo.style.fontWeight = '600';
+        } else if (deliveryInfo) {
+            deliveryInfo.textContent = 'S\'ajouteront des frais de livraison à hauteur de 5 €';
+        }
+    }
+    
+    // Adapter les messages selon l'origine
+    if (fromPage === 'don') {
         if (stripeInfo) {
             if (frequency === 'regulier') {
                 const frequencyText = frequencyLabel

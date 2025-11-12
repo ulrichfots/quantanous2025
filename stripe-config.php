@@ -30,7 +30,7 @@ foreach ([
 
 $shippingFee = getenv('STRIPE_SHIPPING_FEE');
 $currency = getenv('STRIPE_CURRENCY') ?: 'eur';
-$companyName = getenv('STRIPE_COMPANY_NAME') ?: 'Et Tout et Tout';
+$companyName = getenv('STRIPE_COMPANY_NAME') ?: 'quantanous 2025';
 $emailFrom = getenv('STRIPE_EMAIL_FROM') ?: 'no-reply@example.com';
 $emailReplyTo = getenv('STRIPE_EMAIL_REPLY_TO') ?: null;
 $emailBcc = getenv('STRIPE_EMAIL_BCC') ?: null;
