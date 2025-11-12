@@ -150,6 +150,11 @@ if ($status === 'success') {
                     PAYER <span id="montantDisplay">10 €</span>
                 </button>
             </form>
+
+            <!-- Message permanent en bas de la page -->
+            <div class="paiement-email-info">
+                <p>💡 Après le paiement, un reçu vous sera envoyé par email. Pensez à vérifier vos spams si vous ne recevez pas l'email.</p>
+            </div>
         </div>
     </main>
 

@@ -885,6 +885,22 @@ body {
     margin-bottom: 20px;
 }
 
+.paiement-email-info {
+    margin-top: 24px;
+    padding: 16px;
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.paiement-email-info p {
+    font-size: 14px;
+    color: #2E7D32;
+    margin: 0;
+    line-height: 1.5;
+}
+
 .paiement-title {
     font-size: 28px;
     font-weight: 700;
