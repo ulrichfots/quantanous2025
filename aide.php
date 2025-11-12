@@ -63,7 +63,7 @@
             <h1 class="aide-title">Pourquoi donner ?</h1>
             <h2 class="aide-subtitle">Un don = une action</h2>
             
-            <div class="aide-content">
+            <div class="aide-content" id="aideContent">
                 <?php
                 require_once 'load-content.php';
                 $defaultContent = 'nous permettez d\'affecter une part plus importante de vos dons à nos actions.
@@ -105,8 +105,15 @@ Si L\'association et tout et tout peut mener à bien ses actions, c\'est grâce 
                 ?>
             </div>
             
-            <div class="aide-cta">
-                <p>Pourquoi donner à l'association et tout et tout ?</p>
+            <!-- Pagination automatique -->
+            <div class="aide-pagination" id="aidePagination">
+                <button class="pagination-btn pagination-prev" id="paginationPrev" style="display: none;">
+                    ‹ Précédent
+                </button>
+                <span class="pagination-info" id="paginationInfo"></span>
+                <button class="pagination-btn pagination-next" id="paginationNext" style="display: none;">
+                    Suivant ›
+                </button>
             </div>
         </div>
     </main>
