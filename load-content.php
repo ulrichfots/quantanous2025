@@ -45,7 +45,7 @@ function loadProjectsFromBack4app() {
                     'description' => $item['description'] ?? '',
                     'prix' => $item['prix'] ?? 0,
                     'tva_incluse' => $item['tva_incluse'] ?? false,
-                    'quantite' => isset($item['quantite']) ? intval($item['quantite']) : 0,
+                    'quantite' => (isset($item['quantite']) && $item['quantite'] !== null) ? intval($item['quantite']) : 0,
                     'email_alerte' => $item['email_alerte'] ?? null,
                     'image' => $primaryImage,
                     'images' => $images,

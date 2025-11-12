@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const lightboxPrev = document.getElementById('lightboxPrev');
     const lightboxNext = document.getElementById('lightboxNext');
     const lightboxCounter = document.getElementById('lightboxCounter');
+    
+    // Attendre que le DOM soit complètement chargé avant de sélectionner les wrappers
     const imageWrappers = document.querySelectorAll('.achat-image-wrapper');
 
     let currentImages = [];
@@ -79,23 +81,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Ouvrir la lightbox au clic sur une image
-    imageWrappers.forEach(wrapper => {
-        const img = wrapper.querySelector('.achat-image');
-        if (img) {
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const imagesJson = wrapper.dataset.images;
-                if (imagesJson) {
-                    try {
-                        const images = JSON.parse(imagesJson);
-                        if (images && images.length > 0) {
-                            openLightbox(images, 0);
-                        }
-                    } catch (error) {
+    // Utiliser la délégation d'événements pour gérer les images dynamiques
+    document.addEventListener('click', (e) => {
+        const clickedImage = e.target.closest('.achat-image-wrapper .achat-image');
+        if (!clickedImage) return;
+        
+        const wrapper = clickedImage.closest('.achat-image-wrapper');
+        if (!wrapper) return;
+        
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const imagesJson = wrapper.dataset.images;
+        if (imagesJson) {
+            try {
+                const images = JSON.parse(imagesJson);
+                if (images && Array.isArray(images) && images.length > 0) {
+                    // Filtrer les images vides
+                    const validImages = images.filter(img => img && typeof img === 'string' && img.trim() !== '');
+                    if (validImages.length > 0) {
+                        openLightbox(validImages, 0);
                     }
                 }
-            });
+            } catch (error) {
+                // Erreur de parsing JSON - ignorer silencieusement
+            }
+        }
+    });
+    
+    // Ajouter le style cursor pointer à toutes les images cliquables
+    imageWrappers.forEach(wrapper => {
+        const img = wrapper.querySelector('.achat-image.clickable-image');
+        if (img) {
+            img.style.cursor = 'pointer';
         }
     });
 

@@ -71,7 +71,12 @@
                 foreach ($articles as $article):
                 ?>
                 <?php
-                    $quantite = isset($article['quantite']) ? intval($article['quantite']) : 0;
+                    // Récupérer la quantité - vérifier plusieurs sources possibles
+                    $quantite = 0;
+                    if (isset($article['quantite']) && $article['quantite'] !== null && $article['quantite'] !== '') {
+                        $quantite = is_numeric($article['quantite']) ? intval($article['quantite']) : 0;
+                    }
+                    
                     $stockClass = 'stock-';
                     $stockText = '';
                     if ($quantite === 0) {
@@ -84,20 +89,30 @@
                         $stockClass .= 'orange';
                         $stockText = $quantite . ' unité(s)';
                     } else {
+                        // Stock > 5 : vert
                         $stockClass .= 'vert';
                         $stockText = $quantite . ' unité(s)';
                     }
-                    $images = $article['images'] ?? [];
+                    
+                    // Récupérer les images - vérifier plusieurs sources
+                    $images = [];
+                    if (isset($article['images']) && is_array($article['images'])) {
+                        $images = array_filter($article['images'], function($img) {
+                            return !empty($img) && is_string($img);
+                        });
+                        $images = array_values($images); // Réindexer
+                    }
                     if (empty($images) && !empty($article['image'])) {
                         $images = [$article['image']];
                     }
                 ?>
                 <div class="achat-item">
-                    <div class="achat-image-wrapper" data-images='<?php echo htmlspecialchars(json_encode($images), ENT_QUOTES, 'UTF-8'); ?>'>
+                    <div class="achat-image-wrapper" data-images='<?php echo htmlspecialchars(json_encode($images, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8'); ?>'>
                         <?php if (!empty($images)): ?>
                             <img src="<?php echo htmlspecialchars($images[0]); ?>" 
                                  alt="<?php echo htmlspecialchars($article['titre']); ?>" 
-                                 class="achat-image"
+                                 class="achat-image clickable-image"
+                                 data-image-index="0"
                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'120\'%3E%3Crect width=\'100\' height=\'120\' fill=\'%23E0E0E0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-family=\'Arial\' font-size=\'12\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'">
                         <?php else: ?>
                             <img src="assets/images/placeholder.jpg" 
@@ -114,7 +129,7 @@
                             <span class="achat-price"><?php echo number_format($article['prix'] ?? 0, 2, ',', ' '); ?> €</span>
                         </div>
                         <div class="achat-stock-info">
-                            <span class="stock-indicator <?php echo $stockClass; ?>"><?php echo htmlspecialchars($stockText); ?></span>
+                            <span class="stock-indicator <?php echo htmlspecialchars($stockClass); ?>"><?php echo htmlspecialchars($stockText); ?></span>
                         </div>
                     </div>
                     <button class="achat-donner-btn" data-article-id="<?php echo $article['id']; ?>" data-prix="<?php echo $article['prix']; ?>">

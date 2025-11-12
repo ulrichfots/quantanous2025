@@ -541,6 +541,15 @@ body {
     display: block;
 }
 
+.achat-image.clickable-image {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.achat-image.clickable-image:hover {
+    transform: scale(1.05);
+}
+
 .achat-content {
     flex: 1;
     display: flex;
