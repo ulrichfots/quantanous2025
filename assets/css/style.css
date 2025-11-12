@@ -889,7 +889,7 @@ body {
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 99999;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     opacity: 0;
@@ -899,6 +899,7 @@ body {
 }
 
 .payment-success-modal.active {
+    display: flex;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
