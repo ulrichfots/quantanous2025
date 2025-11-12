@@ -17,6 +17,11 @@ class EmailHelper
 
     public function __construct()
     {
+        // Charger les variables d'environnement depuis .env si disponible
+        if (file_exists(__DIR__ . '/env.php')) {
+            require_once __DIR__ . '/env.php';
+        }
+
         if (!file_exists(__DIR__ . '/stripe-config.php')) {
             throw new RuntimeException('Fichier stripe-config.php introuvable pour la configuration e-mail.');
         }
@@ -33,6 +38,9 @@ class EmailHelper
         $this->smtpUser = getenv('SMTP_USER') ?: '';
         $this->smtpPass = getenv('SMTP_PASS') ?: '';
         $this->smtpSecure = getenv('SMTP_SECURE') ?: 'tls'; // 'tls' ou 'ssl'
+        
+        // Log pour déboguer (sans afficher le mot de passe)
+        error_log('EmailHelper SMTP config: Host=' . $this->smtpHost . ', Port=' . $this->smtpPort . ', User=' . ($this->smtpUser ?: 'non défini') . ', Secure=' . $this->smtpSecure);
     }
 
     /**
