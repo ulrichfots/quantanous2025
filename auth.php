@@ -206,16 +206,34 @@ if (!function_exists('google_http_get_json')) {
 if (!function_exists('google_enforce_authentication')) {
     function google_enforce_authentication(): void
     {
+        $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        
         $allowedPaths = [
             '/login.php',
             '/api.php/google-login',
             '/api.php/google-logout',
             '/api.php/stripe-webhook', // Webhook Stripe - authentification via signature Stripe uniquement
             '/manifest.json', // Manifest PWA - doit être accessible sans authentification
+            '/manifest.php', // Manifest PWA (PHP) - doit être accessible sans authentification
             '/service-worker.js', // Service Worker - doit être accessible sans authentification
+            '/service-worker.php', // Service Worker (PHP) - doit être accessible sans authentification
         ];
-
-        $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        
+        // Autoriser l'accès pour les robots/crawlers (PWABuilder, etc.)
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $isBot = preg_match('/bot|crawler|spider|pwa|builder|google|bing|yahoo|puppeteer|headless/i', $userAgent);
+        
+        // Autoriser l'accès aux fichiers PWA pour tous (manifest, service worker)
+        if (strpos($currentPath, '/manifest') !== false || 
+            strpos($currentPath, '/service-worker') !== false ||
+            strpos($currentPath, '/assets/') !== false) {
+            return;
+        }
+        
+        // Pour les bots, permettre l'accès à la page d'accueil pour détecter le manifest/service worker
+        if ($isBot && ($currentPath === '/' || $currentPath === '/index.php')) {
+            return;
+        }
         $scriptName = basename($_SERVER['SCRIPT_NAME'] ?? '');
         $isApiRequest = $scriptName === 'api.php';
 
