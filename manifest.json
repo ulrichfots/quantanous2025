@@ -1,12 +1,15 @@
 {
+  "id": "/",
   "name": "quantanous 2025",
   "short_name": "quantanous",
   "description": "Application quantanous 2025",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2E7D32",
   "orientation": "portrait-primary",
+  "lang": "fr",
   "icons": [
     {
       "src": "assets/icons/icon-192x192.png",
@@ -32,7 +35,8 @@
       "icons": [
         {
           "src": "assets/icons/icon-192x192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }

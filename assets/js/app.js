@@ -1,18 +1,3 @@
-// Enregistrement du Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.php')
-            .then((registration) => {
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                    });
-                });
-            })
-            .catch(() => {});
-    });
-}
-
 // Gestion du menu kebab (menu contextuel)
 document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menuBtn');
