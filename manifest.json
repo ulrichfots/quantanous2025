@@ -1,7 +1,7 @@
 {
-  "name": "Et Tout et Tout",
-  "short_name": "ETET",
-  "description": "Journal réalisé par un collectif de soins",
+  "name": "quantanous 2025",
+  "short_name": "quantanous",
+  "description": "Application quantanous 2025",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

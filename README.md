@@ -32,22 +32,34 @@ Application Progressive Web App développée en PHP, pouvant être convertie en 
 
 ## 📱 Générer un APK à partir de la PWA
 
-### Méthode 1 : PWA Builder (Recommandé - Gratuit)
+### Méthode 1 : PWA Builder (Recommandé - Gratuit et Simple)
+
+**Votre site est déjà en ligne :** `https://quantanous2025.onrender.com`
 
 1. **Aller sur [PWA Builder](https://www.pwabuilder.com/)**
 
 2. **Entrer l'URL de votre PWA**
-   - Votre application doit être accessible via HTTPS
-   - Exemple : `https://votre-domaine.com`
+   - Collez : `https://quantanous2025.onrender.com`
+   - Cliquez sur "Start"
 
 3. **Analyser votre PWA**
    - PWA Builder va vérifier votre manifest.json et service worker
-   - Corrigez les erreurs éventuelles
+   - Vous devriez avoir des scores élevés (90+)
+   - Si des améliorations sont suggérées, notez-les
 
 4. **Générer l'APK**
-   - Cliquez sur "Package for Stores"
+   - Cliquez sur "Build My PWA"
    - Sélectionnez "Android"
-   - Téléchargez le package ou utilisez leur service cloud
+   - Cliquez sur "Generate Package"
+   - Téléchargez le fichier ZIP généré
+
+5. **Installer l'APK sur votre téléphone**
+   - Extrayez le fichier ZIP
+   - Transférez le fichier `.apk` sur votre téléphone Android
+   - Sur votre téléphone : **Paramètres > Sécurité > Autoriser l'installation d'applications depuis des sources inconnues**
+   - Ouvrez le fichier APK et installez l'application
+
+**Note :** Si PWABuilder demande des icônes, vous pouvez utiliser `assets/icons/photobackground.JPG` comme icône principale.
 
 ### Méthode 2 : Trusted Web Activity (TWA) - Manuel
 
