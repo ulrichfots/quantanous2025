@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mon-app-pwa-v4';
+const CACHE_NAME = 'mon-app-pwa-v5';
 const urlsToCache = [
   './',
   './index.php',
@@ -7,6 +7,8 @@ const urlsToCache = [
   './assets/js/app.js',
   './assets/js/install.js',
   './assets/icons/photobackground.JPG',
+  './assets/icons/icon-192x192.png',
+  './assets/icons/icon-512x512.png',
   './manifest.php'
 ];
 

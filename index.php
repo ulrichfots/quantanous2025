@@ -113,6 +113,16 @@
     </nav>
 
     <!-- JavaScript -->
+    <script>
+        // Enregistrement du Service Worker (pour détection par PWABuilder)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.php')
+                    .then(() => {})
+                    .catch(() => {});
+            });
+        }
+    </script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/install.js"></script>
 </body>
