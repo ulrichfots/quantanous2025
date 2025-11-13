@@ -7,7 +7,7 @@ const urlsToCache = [
   './assets/js/app.js',
   './assets/js/install.js',
   './assets/icons/photobackground.JPG',
-  './manifest.json'
+  './manifest.php'
 ];
 
 // Installation du service worker

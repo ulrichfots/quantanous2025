@@ -33,7 +33,7 @@ if ($status === 'success') {
     <title>Paiement - quantanous 2025</title>
     
     <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.php">
     
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="assets/icons/photobackground.JPG">

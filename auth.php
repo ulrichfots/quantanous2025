@@ -211,6 +211,8 @@ if (!function_exists('google_enforce_authentication')) {
             '/api.php/google-login',
             '/api.php/google-logout',
             '/api.php/stripe-webhook', // Webhook Stripe - authentification via signature Stripe uniquement
+            '/manifest.json', // Manifest PWA - doit être accessible sans authentification
+            '/service-worker.js', // Service Worker - doit être accessible sans authentification
         ];
 
         $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';

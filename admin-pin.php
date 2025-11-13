@@ -16,7 +16,7 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
     <title>Modifier le code PIN - quantanous 2025</title>
     
     <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.php">
     
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="assets/icons/photobackground.JPG">
