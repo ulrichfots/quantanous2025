@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     donnerBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            // Vérifier si le bouton est désactivé
+            if (btn.disabled || btn.classList.contains('disabled')) {
+                return;
+            }
+            
             const articleId = btn.dataset.articleId || '';
             const prix = btn.dataset.prix || btn.closest('.achat-item').querySelector('.achat-price').textContent.trim();
             

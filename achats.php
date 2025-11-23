@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Achats - Et Tout et Tout">
+    <meta name="description" content="Achats - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Achats - quantanous 2025</title>
     
@@ -48,9 +48,6 @@
         </div>
         <div class="context-menu-item" data-page="explications">
             Modifier les explications
-        </div>
-        <div class="context-menu-item" data-page="logout">
-            Se déconnecter
         </div>
     </div>
 
@@ -132,8 +129,11 @@
                             <span class="stock-indicator <?php echo htmlspecialchars($stockClass); ?>"><?php echo htmlspecialchars($stockText); ?></span>
                         </div>
                     </div>
-                    <button class="achat-donner-btn" data-article-id="<?php echo $article['id']; ?>" data-prix="<?php echo $article['prix']; ?>">
-                        ACHAT
+                    <button class="achat-donner-btn <?php echo ($quantite === 0) ? 'disabled' : ''; ?>" 
+                            data-article-id="<?php echo $article['id']; ?>" 
+                            data-prix="<?php echo $article['prix']; ?>"
+                            <?php echo ($quantite === 0) ? 'disabled' : ''; ?>>
+                        <?php echo ($quantite === 0) ? 'RUPTURE DE STOCK' : 'ACHAT'; ?>
                     </button>
                 </div>
                 <?php endforeach; ?>

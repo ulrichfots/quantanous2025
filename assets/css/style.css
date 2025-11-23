@@ -224,8 +224,11 @@ body {
     align-items: center;
     padding: 8px 0;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    z-index: 100;
+    z-index: 9999;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .nav-item {
@@ -669,6 +672,22 @@ body {
     box-shadow: 0 1px 4px rgba(46, 125, 50, 0.2);
 }
 
+.achat-donner-btn.disabled,
+.achat-donner-btn:disabled {
+    background-color: #9E9E9E;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.achat-donner-btn.disabled:hover,
+.achat-donner-btn:disabled:hover {
+    background-color: #9E9E9E;
+    transform: none;
+    box-shadow: none;
+}
+
 /* ============================================
    PAGE AIDE - Styles
    ============================================ */
@@ -906,7 +925,7 @@ body {
     align-items: center;
     padding: 12px 8px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
-    z-index: 100;
+    z-index: 9998;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -1602,7 +1621,8 @@ body {
 }
 
 .pin-keyboard {
-    padding: 8px 0 4px;
+    padding: 24px 0 16px;
+    margin-top: 16px;
 }
 
 .keyboard-row {
@@ -1707,12 +1727,27 @@ body {
 
     .pin-inputs-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .pin-group {
+        gap: 10px;
+    }
+
+    .pin-keyboard {
+        padding: 20px 0 12px;
+        margin-top: 12px;
     }
 
     .key-btn {
         width: 60px;
         height: 60px;
         font-size: 22px;
+    }
+
+    .keyboard-row {
+        gap: 12px;
+        margin-bottom: 12px;
     }
 }
 

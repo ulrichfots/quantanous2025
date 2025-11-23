@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Et Tout et Tout - Présentation">
+    <meta name="description" content="quantanous - Présentation">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
-    <title>Et Tout et Tout - quantanous 2025</title>
+    <title>quantanous - quantanous 2025</title>
     
     <!-- Manifest -->
     <link rel="manifest" href="manifest.php">
@@ -49,9 +49,6 @@
         <div class="context-menu-item" data-page="explications">
             Modifier les explications
         </div>
-        <div class="context-menu-item" data-page="logout">
-            Se déconnecter
-        </div>
     </div>
 
     <!-- Overlay pour fermer le menu -->
@@ -70,7 +67,7 @@
             <div class="content-text">
                 <?php
                 require_once 'load-content.php';
-                $defaultContent = 'Et Tout et Tout est un journal réalisé par un collectif de soins, dans le but de montrer un visage plus humain de la psychiatrie et d\'humaniser la société en général. Ceci n\'est pas de la psychiatrie, aurait dit Magritte par des articles divers et variés, on fait mieux connaitre les processus de destigmatisation des maladies de la psyché, des maths, des stigmates, des astigmates, des asticots et des abricots. On essaye d\'attirer l\'attention du lecteur sur les frontières entre normalité et anormalité. On parle d\'art brut, de poèmes marginaux dans un style néo-surréaliste. Le succès connu par le journal nous a permis de constituer une association (et de dormir sur nos deux oreilles) depuis 2015.';
+                $defaultContent = 'quantanous est un journal réalisé par un collectif de soins, dans le but de montrer un visage plus humain de la psychiatrie et d\'humaniser la société en général. Ceci n\'est pas de la psychiatrie, aurait dit Magritte par des articles divers et variés, on fait mieux connaitre les processus de destigmatisation des maladies de la psyché, des maths, des stigmates, des astigmates, des asticots et des abricots. On essaye d\'attirer l\'attention du lecteur sur les frontières entre normalité et anormalité. On parle d\'art brut, de poèmes marginaux dans un style néo-surréaliste. Le succès connu par le journal nous a permis de constituer une association (et de dormir sur nos deux oreilles) depuis 2015.';
                 $contenu = loadContentFromBack4app('presentation', $defaultContent);
                 
                 // Si le contenu contient du HTML, l'afficher tel quel, sinon le formater

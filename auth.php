@@ -268,27 +268,28 @@ if (!function_exists('google_enforce_authentication')) {
     }
 }
 
-if (!defined('AUTH_ALLOW_GOOGLE_PUBLIC')) {
-    try {
-        google_enforce_authentication();
-    } catch (RuntimeException $exception) {
-        if (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'api.php') {
-            if (!headers_sent()) {
-                header('Content-Type: application/json');
-            }
-            http_response_code(500);
-            echo json_encode([
-                'status' => 'error',
-                'message' => $exception->getMessage()
-            ]);
-        } else {
-            http_response_code(500);
-            echo '<h1>Configuration Google requise</h1>';
-            echo '<p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>';
-        }
-        exit;
-    }
-}
+// Authentification Google désactivée
+// if (!defined('AUTH_ALLOW_GOOGLE_PUBLIC')) {
+//     try {
+//         google_enforce_authentication();
+//     } catch (RuntimeException $exception) {
+//         if (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'api.php') {
+//             if (!headers_sent()) {
+//                 header('Content-Type: application/json');
+//             }
+//             http_response_code(500);
+//             echo json_encode([
+//                 'status' => 'error',
+//                 'message' => $exception->getMessage()
+//             ]);
+//         } else {
+//             http_response_code(500);
+//             echo '<h1>Configuration Google requise</h1>';
+//             echo '<p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>';
+//         }
+//         exit;
+//     }
+// }
 
 if (!function_exists('pin_is_validated')) {
     function pin_is_validated(): bool

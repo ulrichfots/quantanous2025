@@ -8,7 +8,7 @@ $pinRedirect = $pinRedirect ?? ($_SERVER['REQUEST_URI'] ?? 'index.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#2E7D32">
-    <title>Code PIN requis - Et Tout et Tout</title>
+    <title>Code PIN requis - quantanous</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="pin-lock-body" data-pin-redirect="<?php echo htmlspecialchars($pinRedirect, ENT_QUOTES, 'UTF-8'); ?>">

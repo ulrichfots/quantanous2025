@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Faire un don - Et Tout et Tout">
+    <meta name="description" content="Faire un don - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Faire un don - quantanous 2025</title>
     
@@ -48,9 +48,6 @@
         </div>
         <div class="context-menu-item" data-page="explications">
             Modifier les explications
-        </div>
-        <div class="context-menu-item" data-page="logout">
-            Se déconnecter
         </div>
     </div>
 

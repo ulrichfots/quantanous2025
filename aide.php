@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Pourquoi donner ? - Et Tout et Tout">
+    <meta name="description" content="Pourquoi donner ? - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Pourquoi donner ? - quantanous 2025</title>
     
@@ -49,9 +49,6 @@
         <div class="context-menu-item" data-page="explications">
             Modifier les explications
         </div>
-        <div class="context-menu-item" data-page="logout">
-            Se déconnecter
-        </div>
     </div>
 
     <!-- Overlay pour fermer le menu -->
@@ -79,7 +76,7 @@ Soutenez-nous tous les mois
 
 Au quotidien, nos bénévoles sauvent la vie et viennent en aide aux personnes handicapé
 
-Si L\'association et tout et tout peut mener à bien ses actions, c\'est grâce à vos dons, vos dons mensuels qui nous assurent des ressources stables. Grâce à ce soutien régulier, nous pouvons être plus réactif, plus efficace, par de meilleures actions sur le terrain.';
+Si L\'association quantanous peut mener à bien ses actions, c\'est grâce à vos dons, vos dons mensuels qui nous assurent des ressources stables. Grâce à ce soutien régulier, nous pouvons être plus réactif, plus efficace, par de meilleures actions sur le terrain.';
                 $contenu = loadContentFromBack4app('explications', $defaultContent);
                 
                 // Convertir le contenu HTML en paragraphes si nécessaire

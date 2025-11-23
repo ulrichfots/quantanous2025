@@ -7,11 +7,11 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-presentation.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Modifier la présentation - Et Tout et Tout">
+    <meta name="description" content="Modifier la présentation - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Modifier la présentation - quantanous 2025</title>
     
@@ -44,7 +44,7 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-presentation.php');
             <div class="editor-container" id="editor" contenteditable="true">
                 <?php
                 require_once 'load-content.php';
-                $defaultContent = 'Et Tout et Tout est un journal réalisé par un collectif de soins, dans le but de montrer un visage plus humain de la psychiatrie et d\'humaniser la société en général. Ceci n\'est pas de la psychiatrie, aurait dit Magritte par des articles divers et variés, on fait mieux connaitre les processus de destigmatisation des maladies de la psyché, des maths, des stigmates, des astigmates, des asticots et des abricots. On essaye d\'attirer l\'attention du lecteur sur les frontières entre normalité et anormalité. On parle d\'art brut, de poèmes marginaux dans un style néo-surréaliste. Le succès connu par le journal nous a permis de constituer une association (et de dormir sur nos deux oreilles) depuis 2015.';
+                $defaultContent = 'quantanous est un journal réalisé par un collectif de soins, dans le but de montrer un visage plus humain de la psychiatrie et d\'humaniser la société en général. Ceci n\'est pas de la psychiatrie, aurait dit Magritte par des articles divers et variés, on fait mieux connaitre les processus de destigmatisation des maladies de la psyché, des maths, des stigmates, des astigmates, des asticots et des abricots. On essaye d\'attirer l\'attention du lecteur sur les frontières entre normalité et anormalité. On parle d\'art brut, de poèmes marginaux dans un style néo-surréaliste. Le succès connu par le journal nous a permis de constituer une association (et de dormir sur nos deux oreilles) depuis 2015.';
                 $contenu = loadContentFromBack4app('presentation', $defaultContent);
                 
                 // Si le contenu contient du HTML, l'afficher tel quel, sinon l'échapper

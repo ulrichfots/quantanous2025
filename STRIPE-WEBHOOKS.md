@@ -29,7 +29,7 @@ Ce projet envoie désormais un e-mail personnalisé après chaque paiement Strip
 Toujours dans `stripe-config.php`, renseignez :
 
 ```php
-'company_name'  => 'Et Tout et Tout',
+'company_name'  => 'quantanous',
 'email_from'    => 'no-reply@votredomaine.fr',
 'email_reply_to'=> 'contact@votredomaine.fr', // optionnel
 'email_bcc'     => 'tresorier@votredomaine.fr', // optionnel

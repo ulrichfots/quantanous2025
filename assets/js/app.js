@@ -60,9 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'pin':
                     window.location.href = 'admin-pin.php';
                     break;
-                case 'logout':
-                    window.location.href = 'logout.php?redirect=' + encodeURIComponent(window.location.href);
-                    break;
             }
             closeMenu();
         });

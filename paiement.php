@@ -17,18 +17,11 @@ if ($status === 'success') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Paiement - Et Tout et Tout">
+    <meta name="description" content="Paiement - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
-    
-    <!-- Protection contre les iframes (nécessaire pour Stripe Checkout) -->
-    <script>
-        if (window.self !== window.top) {
-            window.top.location = window.self.location;
-        }
-    </script>
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Paiement - quantanous 2025</title>
     
@@ -41,6 +34,9 @@ if ($status === 'success') {
     
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <!-- Barre d'application supérieure -->
@@ -69,9 +65,6 @@ if ($status === 'success') {
         <div class="context-menu-item" data-page="explications">
             Modifier les explications
         </div>
-        <div class="context-menu-item" data-page="logout">
-            Se déconnecter
-        </div>
     </div>
 
     <!-- Overlay pour fermer le menu -->
@@ -94,7 +87,7 @@ if ($status === 'success') {
             <?php endif; ?>
             
             <p class="paiement-delivery-info" id="deliveryInfo">S'ajouteront des frais de livraison à hauteur de 5 €</p>
-            <p class="paiement-stripe-info">Le paiement est sécurisé via Stripe. Vous serez redirigé vers une page de paiement sécurisée.</p>
+            <p class="paiement-stripe-info">Le paiement est sécurisé via Stripe. Remplissez vos informations ci-dessous.</p>
 
             <form class="paiement-form" id="paiementForm">
                 <!-- Informations personnelles -->
@@ -144,6 +137,14 @@ if ($status === 'success') {
                 <!-- Montant à payer -->
                 <input type="hidden" name="montant" id="montantInput" value="10">
                 <input type="hidden" name="article_id" id="articleIdInput" value="">
+
+                <!-- Stripe Payment Element -->
+                <div id="payment-element" style="margin: 24px 0;">
+                    <!-- Stripe Elements sera injecté ici -->
+                </div>
+
+                <!-- Messages d'erreur -->
+                <div id="payment-message" class="payment-message" style="display: none;"></div>
 
                 <!-- Bouton de paiement -->
                 <button type="submit" class="payer-btn" id="payerBtn">

@@ -135,6 +135,23 @@ if ($path === '/test' && $method === 'GET') {
 }
 
 // Statut du PIN
+if ($path === '/get-stripe-config' && $method === 'GET') {
+    if ($stripe === null) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Stripe n\'est pas configuré.'
+        ]);
+        exit;
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'publishable_key' => $stripe->getPublishableKey()
+    ]);
+    exit;
+}
+
 if ($path === '/pin-status' && $method === 'GET') {
     echo json_encode([
         'status' => 'success',
@@ -188,6 +205,232 @@ if ($path === '/verify-pin' && $method === 'POST') {
     exit;
 }
 
+// Création d'un Payment Intent (paiement intégré, sans redirection)
+if ($path === '/create-payment-intent' && $method === 'POST') {
+    if ($stripe === null) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Stripe n\'est pas configuré. Vérifiez stripe-config.php.'
+        ]);
+        exit;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true) ?: [];
+
+    $amount = isset($input['montant']) ? (float) $input['montant'] : 0;
+    if ($amount <= 0) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Montant invalide'
+        ]);
+        exit;
+    }
+
+    $from = $input['from'] ?? '';
+    $frequency = $input['frequency'] ?? '';
+    $articleId = $input['article_id'] ?? '';
+    $customerEmail = $input['email'] ?? null;
+    $frequencyInterval = $input['frequency_interval'] ?? '';
+    $frequencyIntervalCount = isset($input['frequency_interval_count']) ? (int) $input['frequency_interval_count'] : null;
+    $frequencyLabel = $input['frequency_label'] ?? '';
+
+    $metadata = [
+        'nom' => $input['nom'] ?? '',
+        'prenom' => $input['prenom'] ?? '',
+        'adresse' => $input['adresse'] ?? '',
+        'code_postal' => $input['code_postal'] ?? '',
+        'ville' => $input['ville'] ?? '',
+        'article_id' => $articleId,
+        'source' => $from,
+    ];
+
+    // Vérifier si c'est un don récurrent
+    $isRecurring = ($from === 'don' && $frequency === 'regulier');
+
+    if ($isRecurring) {
+        // Pour les dons récurrents, créer un Setup Intent
+        $intervalMapByLabel = [
+            'mensuel' => ['month', 1],
+            'trimestriel' => ['month', 3],
+            'semestriel' => ['month', 6],
+            'annuel' => ['year', 1],
+        ];
+
+        $normalizedLabel = strtolower($frequencyLabel);
+        if (isset($intervalMapByLabel[$normalizedLabel])) {
+            [$recurringInterval, $recurringIntervalCount] = $intervalMapByLabel[$normalizedLabel];
+        }
+
+        $allowedIntervals = ['day', 'week', 'month', 'year'];
+        if (!in_array($frequencyInterval, $allowedIntervals, true)) {
+            $frequencyInterval = '';
+        }
+
+        if ($frequencyInterval && $frequencyIntervalCount) {
+            $recurringInterval = $frequencyInterval;
+            $recurringIntervalCount = max(1, $frequencyIntervalCount);
+        }
+
+        if (!$recurringInterval) {
+            $recurringInterval = 'month';
+            $recurringIntervalCount = 1;
+        }
+
+        $metadata['type'] = 'don_regulier';
+        $metadata['frequency'] = $frequencyLabel;
+        $metadata['frequency_interval'] = $recurringInterval;
+        $metadata['frequency_interval_count'] = $recurringIntervalCount;
+        $metadata['frequency_label'] = $frequencyLabel;
+
+        $setupIntent = $stripe->createSetupIntent([
+            'customer_email' => $customerEmail,
+            'metadata' => array_filter($metadata, fn($value) => $value !== null && $value !== ''),
+        ]);
+
+        if (!$setupIntent['success']) {
+            http_response_code(500);
+            echo json_encode([
+                'status' => 'error',
+                'message' => $setupIntent['error'] ?? 'Erreur Stripe inconnue'
+            ]);
+            exit;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'client_secret' => $setupIntent['data']['client_secret'] ?? null,
+            'setup_intent_id' => $setupIntent['data']['id'] ?? null,
+            'is_subscription' => true,
+            'amount' => $amount,
+            'interval' => $recurringInterval,
+            'interval_count' => $recurringIntervalCount,
+            'frequency_label' => $frequencyLabel
+        ]);
+        exit;
+    }
+
+    // Pour les paiements uniques (achats ou dons ponctuels)
+    $shippingFee = $stripe->getDefaultShippingFee();
+    if ($from === 'achats' && $amount > 60.0) {
+        $shippingFee = 0.0;
+    }
+
+    if ($from === 'don') {
+        $shippingFee = 0.0;
+    }
+
+    if ($from === 'achats') {
+        $metadata['type'] = 'achat';
+        if (!empty($articleId)) {
+            $projectResult = $back4app->getById('Project', $articleId);
+            if ($projectResult['success'] ?? false) {
+                $project = $projectResult['data'] ?? [];
+                if (!empty($project)) {
+                    $amount = isset($project['prix']) ? (float) $project['prix'] : $amount;
+                    $metadata['project_title'] = $project['titre'] ?? '';
+                    $metadata['project_id'] = $articleId;
+                }
+            }
+        }
+    } else {
+        $metadata['type'] = 'don_ponctuel';
+    }
+
+    $paymentIntent = $stripe->createPaymentIntent([
+        'amount' => $amount,
+        'customer_email' => $customerEmail,
+        'metadata' => array_filter($metadata, fn($value) => $value !== null && $value !== ''),
+        'shipping_fee' => $shippingFee,
+    ]);
+
+    if (!$paymentIntent['success']) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => $paymentIntent['error'] ?? 'Erreur Stripe inconnue'
+        ]);
+        exit;
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'client_secret' => $paymentIntent['data']['client_secret'] ?? null,
+        'payment_intent_id' => $paymentIntent['data']['id'] ?? null,
+        'is_subscription' => false
+    ]);
+    exit;
+}
+
+// Création d'une Subscription après confirmation du Setup Intent
+if ($path === '/create-subscription' && $method === 'POST') {
+    if ($stripe === null) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Stripe n\'est pas configuré.'
+        ]);
+        exit;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true) ?: [];
+    $paymentMethodId = $input['payment_method_id'] ?? '';
+    $amount = isset($input['amount']) ? (float) $input['amount'] : 0;
+    $interval = $input['interval'] ?? 'month';
+    $intervalCount = isset($input['interval_count']) ? (int) $input['interval_count'] : 1;
+    $customerEmail = $input['email'] ?? null;
+    $frequencyLabel = $input['frequency_label'] ?? '';
+
+    if (empty($paymentMethodId) || $amount <= 0) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Paramètres manquants ou invalides'
+        ]);
+        exit;
+    }
+
+    $metadata = [
+        'nom' => $input['nom'] ?? '',
+        'prenom' => $input['prenom'] ?? '',
+        'adresse' => $input['adresse'] ?? '',
+        'code_postal' => $input['code_postal'] ?? '',
+        'ville' => $input['ville'] ?? '',
+        'type' => 'don_regulier',
+        'frequency' => $frequencyLabel,
+        'frequency_interval' => $interval,
+        'frequency_interval_count' => $intervalCount,
+        'frequency_label' => $frequencyLabel,
+        'source' => 'don',
+    ];
+
+    $subscription = $stripe->createSubscription([
+        'amount' => $amount,
+        'payment_method_id' => $paymentMethodId,
+        'customer_email' => $customerEmail,
+        'interval' => $interval,
+        'interval_count' => $intervalCount,
+        'metadata' => array_filter($metadata, fn($value) => $value !== null && $value !== ''),
+        'product_name' => sprintf('Don %s - quantanous', $frequencyLabel),
+    ]);
+
+    if (!$subscription['success']) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => $subscription['error'] ?? 'Erreur lors de la création de l\'abonnement'
+        ]);
+        exit;
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'subscription' => $subscription['data']
+    ]);
+    exit;
+}
+
 // Création d'une session Stripe Checkout
 if ($path === '/create-checkout-session' && $method === 'POST') {
     if ($stripe === null) {
@@ -225,7 +468,7 @@ if ($path === '/create-checkout-session' && $method === 'POST') {
     if ($from === 'achats' && $amount > 60.0) {
         $shippingFee = 0.0;
     }
-    $productName = 'Paiement Et Tout et Tout';
+    $productName = 'Paiement quantanous';
     $description = sprintf('Paiement de %.2f €', $amount);
 
     $metadata = [
@@ -293,7 +536,7 @@ if ($path === '/create-checkout-session' && $method === 'POST') {
             }
 
             $mode = 'subscription';
-            $productName = sprintf('Don %s - Et Tout et Tout', $frequencyLabel);
+            $productName = sprintf('Don %s - quantanous', $frequencyLabel);
             $description = sprintf('Don %s de %.2f €', $frequencyLabel, $amount);
             $metadata['type'] = 'don_regulier';
             $metadata['frequency'] = $frequencyLabel;
@@ -301,13 +544,13 @@ if ($path === '/create-checkout-session' && $method === 'POST') {
             $metadata['frequency_interval_count'] = $recurringIntervalCount;
             $metadata['frequency_label'] = $frequencyLabel;
         } else {
-            $productName = 'Don ponctuel - Et Tout et Tout';
+            $productName = 'Don ponctuel - quantanous';
             $description = sprintf('Don ponctuel de %.2f €', $amount);
             $metadata['type'] = 'don_ponctuel';
         }
     } else {
         $metadata['type'] = 'achat';
-        $productName = 'Achat - Et Tout et Tout';
+        $productName = 'Achat - quantanous';
         $description = sprintf('Achat de %.2f €', $amount);
 
         if (!empty($articleId)) {

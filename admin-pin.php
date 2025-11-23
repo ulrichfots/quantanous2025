@@ -7,11 +7,11 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Modifier le code PIN - Et Tout et Tout">
+    <meta name="description" content="Modifier le code PIN - quantanous">
     <meta name="theme-color" content="#2E7D32">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Et Tout et Tout">
+    <meta name="apple-mobile-web-app-title" content="quantanous">
     
     <title>Modifier le code PIN - quantanous 2025</title>
     
@@ -50,21 +50,13 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
                     </div>
                     <div class="pin-admin-texts">
                         <h1 class="pin-admin-title">Modifier le code PIN</h1>
-                        <p class="pin-admin-subtitle">Sécurisez l’accès aux pages d’administration en choisissant un code à 6 chiffres facile à retenir pour l’équipe.</p>
                     </div>
                 </header>
-
-                <div class="pin-current-info" role="note">
-                    <span class="pin-pill-label">PIN actuel</span>
-                    <span class="pin-pill-value">271244 (par défaut)</span>
-                    <span class="pin-pill-hint">Pensez à le changer régulièrement.</span>
-                </div>
 
                 <div class="pin-inputs-grid">
                     <!-- Ancien PIN -->
                     <div class="pin-group">
-                        <h2 class="pin-label">Ancien code PIN</h2>
-                        <p class="pin-helper">Entrez le code utilisé actuellement pour valider le changement.</p>
+                        <h2 class="pin-label">Saisissez votre mot de passe actuel</h2>
                         <div class="pin-display" id="oldPinDisplay">
                             <div class="pin-dot"></div>
                             <div class="pin-dot"></div>
@@ -78,8 +70,7 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
 
                     <!-- Nouveau PIN -->
                     <div class="pin-group">
-                        <h2 class="pin-label">Nouveau code PIN</h2>
-                        <p class="pin-helper">Choisissez un code simple à communiquer mais difficile à deviner.</p>
+                        <h2 class="pin-label">Saisissez votre nouveau mot de passe</h2>
                         <div class="pin-display" id="newPinDisplay">
                             <div class="pin-dot"></div>
                             <div class="pin-dot"></div>
@@ -93,8 +84,7 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
 
                     <!-- Confirmation PIN -->
                     <div class="pin-group">
-                        <h2 class="pin-label">Confirmer le nouveau code PIN</h2>
-                        <p class="pin-helper">Retapez le code pour valider qu’il n’y a aucune erreur.</p>
+                        <h2 class="pin-label">Confirmez votre nouveau mot de passe</h2>
                         <div class="pin-display" id="confirmPinDisplay">
                             <div class="pin-dot"></div>
                             <div class="pin-dot"></div>
@@ -133,15 +123,6 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-pin.php');
                             </svg>
                         </button>
                     </div>
-                </div>
-
-                <div class="pin-guidelines">
-                    <h3>Conseils pratiques</h3>
-                    <ul>
-                        <li>Évitez les suites évidentes (000000, 123456).</li>
-                        <li>Communiquez le code uniquement aux personnes habilitées.</li>
-                        <li>Changez-le si vous suspectez une utilisation non autorisée.</li>
-                    </ul>
                 </div>
             </div>
         </section>
