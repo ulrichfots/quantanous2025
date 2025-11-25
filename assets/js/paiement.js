@@ -1,5 +1,23 @@
 // Gestion de la page Paiement avec Stripe Elements (sans redirection)
 document.addEventListener('DOMContentLoaded', async () => {
+    // Attendre que Stripe.js soit chargé
+    if (typeof Stripe === 'undefined') {
+        // Attendre un peu et réessayer
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (typeof Stripe === 'undefined') {
+            const paymentMessage = document.getElementById('payment-message');
+            if (paymentMessage) {
+                paymentMessage.textContent = 'Erreur: Stripe.js n\'est pas chargé. Vérifiez votre connexion internet.';
+                paymentMessage.style.display = 'block';
+                paymentMessage.style.color = '#D32F2F';
+                paymentMessage.style.backgroundColor = '#FFEBEE';
+                paymentMessage.style.padding = '12px';
+                paymentMessage.style.borderRadius = '4px';
+                paymentMessage.style.marginTop = '16px';
+            }
+            return;
+        }
+    }
     const form = document.getElementById('paiementForm');
     const montantInput = document.getElementById('montantInput');
     const montantDisplay = document.getElementById('montantDisplay');
@@ -92,10 +110,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Récupérer la clé publique Stripe
     try {
-        const configResponse = await fetch('api.php/get-stripe-config');
+        // Utiliser un chemin absolu pour éviter les problèmes de chemin relatif
+        const apiUrl = window.location.origin + '/api.php/get-stripe-config';
+        
+        // Vérifier que paymentMessage existe avant de continuer
+        if (!paymentMessage) {
+            throw new Error('Élément payment-message introuvable dans le DOM');
+        }
+        
+        const configResponse = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
         
         if (!configResponse.ok) {
-            throw new Error(`Erreur HTTP: ${configResponse.status}`);
+            const errorText = await configResponse.text();
+            throw new Error(`Erreur HTTP ${configResponse.status}: ${errorText}`);
         }
         
         const configData = await configResponse.json();
@@ -105,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (!configData.publishable_key) {
-            throw new Error('Clé publique Stripe non disponible dans la réponse');
+            throw new Error('Clé publique Stripe non disponible dans la réponse. Réponse: ' + JSON.stringify(configData));
         }
         
         if (typeof Stripe === 'undefined') {
@@ -113,6 +147,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         stripe = Stripe(configData.publishable_key);
+        
+        // Vérifier que Stripe est bien initialisé
+        if (!stripe) {
+            throw new Error('Impossible d\'initialiser Stripe avec la clé fournie');
+        }
     } catch (error) {
         const errorMessage = error.message || 'Erreur: Impossible de charger Stripe. Veuillez rafraîchir la page.';
         if (paymentMessage) {
