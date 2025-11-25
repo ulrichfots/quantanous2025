@@ -134,21 +134,47 @@ if ($path === '/test' && $method === 'GET') {
     exit;
 }
 
-// Statut du PIN
+// Configuration Stripe
 if ($path === '/get-stripe-config' && $method === 'GET') {
     if ($stripe === null) {
         http_response_code(500);
+        $errorDetails = 'Stripe n\'est pas configuré.';
+        
+        // Vérifier si les variables d'environnement sont définies
+        $hasPublishableKey = !empty(getenv('STRIPE_PUBLISHABLE_KEY'));
+        $hasSecretKey = !empty(getenv('STRIPE_SECRET_KEY'));
+        
+        if (!$hasPublishableKey || !$hasSecretKey) {
+            $missing = [];
+            if (!$hasPublishableKey) $missing[] = 'STRIPE_PUBLISHABLE_KEY';
+            if (!$hasSecretKey) $missing[] = 'STRIPE_SECRET_KEY';
+            $errorDetails .= ' Variables manquantes: ' . implode(', ', $missing);
+        }
+        
         echo json_encode([
             'status' => 'error',
-            'message' => 'Stripe n\'est pas configuré.'
+            'message' => $errorDetails
         ]);
         exit;
     }
 
-    echo json_encode([
-        'status' => 'success',
-        'publishable_key' => $stripe->getPublishableKey()
-    ]);
+    try {
+        $publishableKey = $stripe->getPublishableKey();
+        if (empty($publishableKey)) {
+            throw new RuntimeException('Clé publique Stripe vide');
+        }
+        
+        echo json_encode([
+            'status' => 'success',
+            'publishable_key' => $publishableKey
+        ]);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Erreur lors de la récupération de la clé Stripe: ' . $e->getMessage()
+        ]);
+    }
     exit;
 }
 

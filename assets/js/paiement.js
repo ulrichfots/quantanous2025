@@ -93,17 +93,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Récupérer la clé publique Stripe
     try {
         const configResponse = await fetch('api.php/get-stripe-config');
+        
+        if (!configResponse.ok) {
+            throw new Error(`Erreur HTTP: ${configResponse.status}`);
+        }
+        
         const configData = await configResponse.json();
         
-        if (configData.publishable_key) {
-            stripe = Stripe(configData.publishable_key);
-        } else {
-            throw new Error('Clé publique Stripe non disponible');
+        if (configData.status === 'error') {
+            throw new Error(configData.message || 'Erreur de configuration Stripe');
         }
+        
+        if (!configData.publishable_key) {
+            throw new Error('Clé publique Stripe non disponible dans la réponse');
+        }
+        
+        if (typeof Stripe === 'undefined') {
+            throw new Error('Stripe.js n\'est pas chargé. Vérifiez votre connexion internet.');
+        }
+        
+        stripe = Stripe(configData.publishable_key);
     } catch (error) {
-        paymentMessage.textContent = 'Erreur: Impossible de charger Stripe. Veuillez rafraîchir la page.';
-        paymentMessage.style.display = 'block';
-        paymentMessage.style.color = '#D32F2F';
+        const errorMessage = error.message || 'Erreur: Impossible de charger Stripe. Veuillez rafraîchir la page.';
+        if (paymentMessage) {
+            paymentMessage.textContent = errorMessage;
+            paymentMessage.style.display = 'block';
+            paymentMessage.style.color = '#D32F2F';
+            paymentMessage.style.backgroundColor = '#FFEBEE';
+            paymentMessage.style.padding = '12px';
+            paymentMessage.style.borderRadius = '4px';
+            paymentMessage.style.marginTop = '16px';
+        }
+        if (payerBtn) {
+            payerBtn.disabled = true;
+        }
         return;
     }
 
@@ -163,9 +186,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (!stripe || !paymentElementStripe) {
+            if (!stripe) {
                 showMessage('Stripe n\'est pas initialisé. Veuillez rafraîchir la page.', true);
                 return;
+            }
+            
+            // Si le Payment Element n'est pas encore monté, on va le créer maintenant
+            if (!paymentElementStripe) {
+                // On va créer le Payment Intent d'abord, puis monter le Payment Element
+                // Cette partie sera gérée dans le try/catch ci-dessous
             }
 
             if (payerBtn) {

@@ -14,6 +14,11 @@
  *  - BASE_URL (optionnel, sinon auto)
  */
 
+// Charger les variables d'environnement depuis .env si disponible
+if (file_exists(__DIR__ . '/env.php')) {
+    require_once __DIR__ . '/env.php';
+}
+
 $publishableKey = getenv('STRIPE_PUBLISHABLE_KEY');
 $secretKey = getenv('STRIPE_SECRET_KEY');
 $webhookSecret = getenv('STRIPE_WEBHOOK_SECRET');
