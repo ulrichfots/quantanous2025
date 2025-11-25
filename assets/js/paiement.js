@@ -1,23 +1,6 @@
 // Gestion de la page Paiement avec Stripe Elements (sans redirection)
 document.addEventListener('DOMContentLoaded', async () => {
-    // Attendre que Stripe.js soit chargé
-    if (typeof Stripe === 'undefined') {
-        // Attendre un peu et réessayer
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if (typeof Stripe === 'undefined') {
-            const paymentMessage = document.getElementById('payment-message');
-            if (paymentMessage) {
-                paymentMessage.textContent = 'Erreur: Stripe.js n\'est pas chargé. Vérifiez votre connexion internet.';
-                paymentMessage.style.display = 'block';
-                paymentMessage.style.color = '#D32F2F';
-                paymentMessage.style.backgroundColor = '#FFEBEE';
-                paymentMessage.style.padding = '12px';
-                paymentMessage.style.borderRadius = '4px';
-                paymentMessage.style.marginTop = '16px';
-            }
-            return;
-        }
-    }
+    // Récupérer tous les éléments nécessaires
     const form = document.getElementById('paiementForm');
     const montantInput = document.getElementById('montantInput');
     const montantDisplay = document.getElementById('montantDisplay');
@@ -27,6 +10,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stripeInfo = document.querySelector('.paiement-stripe-info');
     const paymentElement = document.getElementById('payment-element');
     const paymentMessage = document.getElementById('payment-message');
+    
+    // Vérifier que les éléments essentiels existent
+    if (!form || !paymentMessage || !paymentElement) {
+        const errorMsg = 'Erreur: Éléments de la page de paiement introuvables.';
+        if (paymentMessage) {
+            paymentMessage.textContent = errorMsg;
+            paymentMessage.style.display = 'block';
+            paymentMessage.style.color = '#D32F2F';
+            paymentMessage.style.backgroundColor = '#FFEBEE';
+            paymentMessage.style.padding = '12px';
+            paymentMessage.style.borderRadius = '4px';
+            paymentMessage.style.marginTop = '16px';
+        } else {
+            alert(errorMsg);
+        }
+        return;
+    }
+    
+    // Attendre que Stripe.js soit chargé
+    if (typeof Stripe === 'undefined') {
+        // Attendre un peu et réessayer
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (typeof Stripe === 'undefined') {
+            paymentMessage.textContent = 'Erreur: Stripe.js n\'est pas chargé. Vérifiez votre connexion internet.';
+            paymentMessage.style.display = 'block';
+            paymentMessage.style.color = '#D32F2F';
+            paymentMessage.style.backgroundColor = '#FFEBEE';
+            paymentMessage.style.padding = '12px';
+            paymentMessage.style.borderRadius = '4px';
+            paymentMessage.style.marginTop = '16px';
+            return;
+        }
+    }
 
     // Récupérer les paramètres de l'URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -112,11 +128,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Utiliser un chemin absolu pour éviter les problèmes de chemin relatif
         const apiUrl = window.location.origin + '/api.php/get-stripe-config';
-        
-        // Vérifier que paymentMessage existe avant de continuer
-        if (!paymentMessage) {
-            throw new Error('Élément payment-message introuvable dans le DOM');
-        }
         
         const configResponse = await fetch(apiUrl, {
             method: 'GET',

@@ -277,8 +277,10 @@ class StripeHelper
             'payment_method_types[0]' => 'card',
         ];
 
+        // Stripe n'accepte pas customer_email directement pour Setup Intent
+        // On met l'email dans les metadata si nécessaire
         if ($customerEmail) {
-            $postData['customer_email'] = $customerEmail;
+            $metadata['customer_email'] = $customerEmail;
         }
 
         foreach ($metadata as $key => $value) {
