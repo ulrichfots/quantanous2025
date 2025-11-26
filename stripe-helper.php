@@ -221,6 +221,8 @@ class StripeHelper
 
         if ($customerEmail) {
             $postData['receipt_email'] = $customerEmail;
+            // Ajouter l'email dans les métadonnées aussi pour le webhook
+            $metadata['email'] = $customerEmail;
         }
 
         foreach ($metadata as $key => $value) {
