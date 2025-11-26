@@ -216,7 +216,6 @@ class StripeHelper
         $postData = [
             'amount' => $amountInCents,
             'currency' => $this->currency,
-            'payment_method_types[0]' => 'card',
             'automatic_payment_methods[enabled]' => 'true',
         ];
 

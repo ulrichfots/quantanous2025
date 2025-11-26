@@ -1214,6 +1214,7 @@ body {
 
 .form-group.half {
     flex: 1;
+    min-width: 0; /* Permet au flex de bien fonctionner sur mobile */
 }
 
 .form-group.full {
@@ -2304,51 +2305,81 @@ body {
         font-size: 13px;
         margin-bottom: 16px;
         padding: 0 4px;
+        line-height: 1.5;
+        text-align: left;
     }
 
     .paiement-form {
         gap: 14px;
+        display: flex;
+        flex-direction: column;
     }
 
     .form-row {
         flex-direction: column;
         gap: 0;
+        width: 100%;
+        display: flex;
     }
 
     .form-group.half {
         width: 100%;
-        margin-bottom: 0;
+        margin-bottom: 14px;
+        flex: none;
+    }
+
+    .form-group.full {
+        width: 100%;
+        margin-bottom: 14px;
     }
 
     .form-group {
         margin-bottom: 14px;
+        width: 100%;
     }
 
     .form-label {
         font-size: 13px;
         margin-bottom: 6px;
+        display: block;
     }
 
     .form-input {
         padding: 14px 12px;
         font-size: 16px; /* Important pour éviter le zoom sur iOS */
         border: 1.5px solid #E0E0E0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .payer-btn {
         padding: 14px 20px;
         font-size: 16px;
         margin-top: 12px;
+        width: 100%;
     }
 
     .paiement-email-info {
         margin-top: 20px;
         padding: 12px;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .paiement-email-info p {
+        font-size: 12px;
+        line-height: 1.5;
+        margin: 0;
     }
 
     #payment-element {
         margin: 16px 0 !important;
+        width: 100%;
+    }
+
+    #payment-message {
+        width: 100%;
+        box-sizing: border-box;
     }
 }
 
