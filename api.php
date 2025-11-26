@@ -1462,6 +1462,110 @@ if ($path === '/get-projects' && $method === 'GET') {
     exit;
 }
 
+// Route pour décrémenter le stock après un achat
+if ($path === '/decrement-stock' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!isset($input['article_id']) || empty($input['article_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'ID de l\'article requis'
+        ]);
+        exit;
+    }
+    
+    $articleId = $input['article_id'];
+    
+    // Récupérer le projet depuis Back4app
+    $projectResult = $back4app->getById('Project', $articleId);
+    if (!($projectResult['success'] ?? false) || empty($projectResult['data'])) {
+        http_response_code(404);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Article non trouvé'
+        ]);
+        exit;
+    }
+    
+    $project = $projectResult['data'];
+    $currentQuantity = isset($project['quantite']) ? max(0, intval($project['quantite'])) : 0;
+    $emailAlerte = $project['email_alerte'] ?? null;
+    $projectTitle = $project['titre'] ?? 'Article';
+    
+    // Décrémenter la quantité de 1
+    $newQuantity = max(0, $currentQuantity - 1);
+    
+    // Mettre à jour le stock dans Back4app
+    $updateResult = $back4app->update('Project', $articleId, [
+        'quantite' => $newQuantity,
+        'updated_at' => date('c')
+    ]);
+    
+    if (!($updateResult['success'] ?? false)) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Erreur lors de la mise à jour du stock'
+        ]);
+        exit;
+    }
+    
+    error_log("Stock: Stock mis à jour pour '{$projectTitle}' - Ancien: {$currentQuantity}, Nouveau: {$newQuantity}");
+    
+    // Vérifier si le stock est en dessous de 5 et envoyer une alerte
+    $alertSent = false;
+    if ($newQuantity < 5 && !empty($emailAlerte) && filter_var($emailAlerte, FILTER_VALIDATE_EMAIL) && $emailHelper) {
+        $subject = "⚠️ Alerte de stock faible - {$projectTitle}";
+        $htmlBody = "
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .alert-box { background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                    .alert-title { color: #856404; font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+                    .info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                    .stock-value { font-size: 24px; font-weight: bold; color: #dc3545; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='alert-box'>
+                        <div class='alert-title'>⚠️ Alerte de stock faible</div>
+                        <p>Le stock de l'article suivant est maintenant en dessous de 5 unités :</p>
+                        <div class='info'>
+                            <strong>Article :</strong> {$projectTitle}<br>
+                            <strong>Stock actuel :</strong> <span class='stock-value'>{$newQuantity}</span> unité(s)
+                        </div>
+                        <p><strong>Action requise :</strong> Veuillez procéder au réapprovisionnement de cet article.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        ";
+        $textBody = "Alerte de stock faible\n\nArticle: {$projectTitle}\nStock actuel: {$newQuantity} unité(s)\n\nVeuillez procéder au réapprovisionnement.";
+        
+        $alertSent = $emailHelper->sendEmail($emailAlerte, $subject, $htmlBody, $textBody);
+        
+        if ($alertSent) {
+            error_log("Stock: Email d'alerte envoyé à {$emailAlerte} pour '{$projectTitle}' (stock: {$newQuantity})");
+        } else {
+            error_log("Stock: Échec de l'envoi de l'email d'alerte à {$emailAlerte}");
+        }
+    }
+    
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Stock mis à jour',
+        'old_quantity' => $currentQuantity,
+        'new_quantity' => $newQuantity,
+        'alert_sent' => $alertSent
+    ]);
+    exit;
+}
+
 // Route pour supprimer un projet
 if ($path === '/delete-project' && $method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
