@@ -80,7 +80,7 @@ if ($status === 'success') {
                     <?= htmlspecialchars($message) ?>
                     <?php if ($status === 'success'): ?>
                         <p style="margin-top: 12px; font-size: 14px; color: #666; font-style: italic;">
-                            💡 Pensez à vérifier vos spams si vous ne recevez pas l'email.
+                            Pensez à vérifier vos spams si vous ne recevez pas l'email.
                         </p>
                     <?php endif; ?>
                 </div>
