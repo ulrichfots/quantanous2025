@@ -88,8 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             deliveryInfo.textContent = 'Livraison gratuite pour les commandes supérieures à 60 €';
             deliveryInfo.style.color = '#2E7D32';
             deliveryInfo.style.fontWeight = '600';
+            deliveryInfo.style.display = 'block';
         } else if (deliveryInfo) {
-            deliveryInfo.textContent = 'S\'ajouteront des frais de livraison à hauteur de 5 €';
+            // Masquer le message pour les commandes < 60€
+            deliveryInfo.style.display = 'none';
         }
         if (stripeInfo) {
             stripeInfo.textContent = 'Le paiement est sécurisé via Stripe. Remplissez vos informations ci-dessous.';

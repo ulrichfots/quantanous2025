@@ -86,7 +86,7 @@ if ($status === 'success') {
                 </div>
             <?php endif; ?>
             
-            <p class="paiement-delivery-info" id="deliveryInfo">S'ajouteront des frais de livraison selon le tarif en vigeur</p>
+            <p class="paiement-delivery-info" id="deliveryInfo" style="display: none;"></p>
             <p class="paiement-stripe-info">Le paiement est sécurisé via Stripe. Remplissez vos informations ci-dessous.</p>
 
             <form class="paiement-form" id="paiementForm">
