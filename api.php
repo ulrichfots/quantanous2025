@@ -1484,7 +1484,123 @@ if ($path === '/get-projects' && $method === 'GET') {
     exit;
 }
 
-// Route pour décrémenter le stock après un achat
+// Route pour compléter un paiement (décrémenter le stock et envoyer l'email)
+if ($path === '/complete-payment' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $articleId = $input['article_id'] ?? '';
+    $customerEmail = $input['email'] ?? '';
+    $customerName = trim(($input['prenom'] ?? '') . ' ' . ($input['nom'] ?? ''));
+    $amount = isset($input['montant']) ? (float) $input['montant'] : 0;
+    $type = $input['type'] ?? 'achat'; // 'achat' ou 'don_ponctuel'
+    
+    // Décrémenter le stock si c'est un achat
+    $stockUpdated = false;
+    $stockResult = null;
+    if ($type === 'achat' && !empty($articleId)) {
+        // Récupérer le projet depuis Back4app
+        $projectResult = $back4app->getById('Project', $articleId);
+        if (($projectResult['success'] ?? false) && !empty($projectResult['data'])) {
+            $project = $projectResult['data'];
+            $currentQuantity = isset($project['quantite']) ? max(0, intval($project['quantite'])) : 0;
+            $emailAlerte = $project['email_alerte'] ?? null;
+            $projectTitle = $project['titre'] ?? 'Article';
+            
+            // Décrémenter la quantité de 1
+            $newQuantity = max(0, $currentQuantity - 1);
+            
+            // Mettre à jour le stock dans Back4app
+            $updateResult = $back4app->update('Project', $articleId, [
+                'quantite' => $newQuantity,
+                'updated_at' => date('c')
+            ]);
+            
+            if (($updateResult['success'] ?? false)) {
+                $stockUpdated = true;
+                $stockResult = ['old' => $currentQuantity, 'new' => $newQuantity];
+                error_log("Stock: Stock mis à jour pour '{$projectTitle}' - Ancien: {$currentQuantity}, Nouveau: {$newQuantity}");
+                
+                // Envoyer une alerte si le stock est en dessous de 5
+                if ($newQuantity < 5 && !empty($emailAlerte) && filter_var($emailAlerte, FILTER_VALIDATE_EMAIL) && $emailHelper) {
+                    $subject = "⚠️ Alerte de stock faible - {$projectTitle}";
+                    $htmlBody = "
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <style>
+                                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                                .alert-box { background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                                .alert-title { color: #856404; font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+                                .info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                                .stock-value { font-size: 24px; font-weight: bold; color: #dc3545; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <div class='alert-box'>
+                                    <div class='alert-title'>⚠️ Alerte de stock faible</div>
+                                    <p>Le stock de l'article suivant est maintenant en dessous de 5 unités :</p>
+                                    <div class='info'>
+                                        <strong>Article :</strong> {$projectTitle}<br>
+                                        <strong>Stock actuel :</strong> <span class='stock-value'>{$newQuantity}</span> unité(s)
+                                    </div>
+                                    <p><strong>Action requise :</strong> Veuillez procéder au réapprovisionnement de cet article.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                    ";
+                    $textBody = "Alerte de stock faible\n\nArticle: {$projectTitle}\nStock actuel: {$newQuantity} unité(s)\n\nVeuillez procéder au réapprovisionnement.";
+                    $emailHelper->sendEmail($emailAlerte, $subject, $htmlBody, $textBody);
+                }
+            }
+        }
+    }
+    
+    // Envoyer l'email de reçu si un email est fourni
+    $emailSent = false;
+    if (!empty($customerEmail) && $emailHelper && $amount > 0) {
+        $metadata = [
+            'nom' => $input['nom'] ?? '',
+            'prenom' => $input['prenom'] ?? '',
+            'adresse' => $input['adresse'] ?? '',
+            'code_postal' => $input['code_postal'] ?? '',
+            'ville' => $input['ville'] ?? '',
+        ];
+        if ($type === 'achat' && !empty($articleId)) {
+            $metadata['article_id'] = $articleId;
+            $metadata['project_id'] = $articleId;
+        }
+        
+        $emailSent = $emailHelper->sendReceipt([
+            'to' => $customerEmail,
+            'type' => $type,
+            'amount' => $amount,
+            'currency' => 'EUR',
+            'metadata' => $metadata,
+            'line_items' => [],
+            'customer' => ['name' => $customerName, 'email' => $customerEmail],
+        ]);
+        
+        if ($emailSent) {
+            error_log("Email de reçu envoyé à {$customerEmail} pour un paiement de {$amount} €");
+        } else {
+            error_log("Échec de l'envoi de l'email de reçu à {$customerEmail}");
+        }
+    }
+    
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Paiement complété',
+        'stock_updated' => $stockUpdated,
+        'stock_result' => $stockResult,
+        'email_sent' => $emailSent
+    ]);
+    exit;
+}
+
+// Route pour décrémenter le stock après un achat (ancienne route, conservée pour compatibilité)
 if ($path === '/decrement-stock' && $method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     

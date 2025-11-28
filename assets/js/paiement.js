@@ -364,29 +364,46 @@ document.addEventListener('DOMContentLoaded', async () => {
                             payerBtn.innerHTML = `PAYER <span id="montantDisplay">${montantDisplay.textContent}</span>`;
                         }
                     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-                        // Paiement réussi - décrémenter le stock si c'est un achat
-                        if (fromPage === 'achats' && articleId) {
-                            try {
-                                const stockResponse = await fetch('api.php/decrement-stock', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                        article_id: articleId
-                                    })
-                                });
-                                
-                                const stockResult = await stockResponse.json();
-                                if (stockResult.status === 'success') {
-                                    console.log('Stock mis à jour:', stockResult);
-                                } else {
-                                    console.error('Erreur lors de la mise à jour du stock:', stockResult.message);
-                                }
-                            } catch (stockError) {
-                                console.error('Erreur lors de l\'appel API de mise à jour du stock:', stockError);
-                                // Ne pas bloquer la redirection en cas d'erreur
+                        // Paiement réussi - compléter le paiement (stock + email)
+                        try {
+                            const completeData = {
+                                type: fromPage === 'achats' ? 'achat' : 'don_ponctuel',
+                                montant: parseFloat(montant),
+                                email: formData.get('email'),
+                                nom: formData.get('nom'),
+                                prenom: formData.get('prenom'),
+                                adresse: formData.get('adresse'),
+                                code_postal: formData.get('code_postal'),
+                                ville: formData.get('ville')
+                            };
+                            
+                            if (fromPage === 'achats' && articleId) {
+                                completeData.article_id = articleId;
                             }
+                            
+                            const completeResponse = await fetch('api.php/complete-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(completeData)
+                            });
+                            
+                            const completeResult = await completeResponse.json();
+                            if (completeResult.status === 'success') {
+                                console.log('Paiement complété:', completeResult);
+                                if (completeResult.stock_updated) {
+                                    console.log('Stock mis à jour:', completeResult.stock_result);
+                                }
+                                if (completeResult.email_sent) {
+                                    console.log('Email de reçu envoyé');
+                                }
+                            } else {
+                                console.error('Erreur lors de la complétion du paiement:', completeResult.message);
+                            }
+                        } catch (completeError) {
+                            console.error('Erreur lors de l\'appel API de complétion du paiement:', completeError);
+                            // Ne pas bloquer la redirection en cas d'erreur
                         }
                         
                         showMessage('Paiement réussi ! Redirection...', false);
