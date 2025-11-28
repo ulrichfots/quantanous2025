@@ -1264,16 +1264,38 @@ if ($path === '/add-project' && $method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     
     // Validation
-    $requiredFields = ['titre', 'description', 'prix'];
+    $requiredFields = ['titre', 'description', 'prix', 'quantite', 'email_alerte'];
     foreach ($requiredFields as $field) {
-        if (!isset($input[$field]) || empty($input[$field])) {
+        if (!isset($input[$field]) || (is_string($input[$field]) && trim($input[$field]) === '')) {
             http_response_code(400);
             echo json_encode([
                 'status' => 'error',
-                'message' => "Le champ '{$field}' est requis"
+                'message' => "Le champ '{$field}' est requis."
             ]);
             exit;
         }
+    }
+
+    // Validation spécifique pour quantite (doit être un nombre >= 0)
+    $quantite = isset($input['quantite']) ? intval($input['quantite']) : null;
+    if ($quantite === null || $quantite < 0) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'La quantité doit être un nombre entier supérieur ou égal à 0.'
+        ]);
+        exit;
+    }
+
+    // Validation spécifique pour email_alerte (doit être un email valide)
+    $emailAlerte = isset($input['email_alerte']) ? trim($input['email_alerte']) : '';
+    if (empty($emailAlerte) || !filter_var($emailAlerte, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Un email valide est requis pour les alertes de stock.'
+        ]);
+        exit;
     }
 
     $titleSlug = normalize_project_title($input['titre']);
@@ -1298,8 +1320,8 @@ if ($path === '/add-project' && $method === 'POST') {
         'description' => $input['description'],
         'prix' => floatval($input['prix']),
         'tva_incluse' => $input['tva_incluse'] ?? false,
-        'quantite' => isset($input['quantite']) ? max(0, intval($input['quantite'])) : 0,
-        'email_alerte' => (!empty($input['email_alerte']) && filter_var($input['email_alerte'], FILTER_VALIDATE_EMAIL)) ? $input['email_alerte'] : null,
+        'quantite' => $quantite,
+        'email_alerte' => $emailAlerte,
         'image' => $primaryImage,
         'images' => $images,
         'titre_slug' => $titleSlug,

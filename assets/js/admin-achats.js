@@ -220,11 +220,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = descriptionInput.value.trim();
             const prix = parseFloat(priceInput.value);
             const tvaIncluse = tvaCheckbox.checked;
-            const quantite = parseInt(quantityInput.value, 10) || 0;
+            const quantite = parseInt(quantityInput.value, 10);
             const emailAlerte = emailInput.value.trim();
 
+            // Validation des champs obligatoires
             if (!titre || !description || Number.isNaN(prix) || prix <= 0) {
                 alert('Veuillez remplir tous les champs correctement.');
+                return;
+            }
+
+            // Validation du stock (obligatoire et >= 0)
+            if (Number.isNaN(quantite) || quantite < 0) {
+                alert('Veuillez saisir une quantité valide (nombre entier >= 0).');
+                quantityInput.focus();
+                return;
+            }
+
+            // Validation de l'email (obligatoire et format valide)
+            if (!emailAlerte) {
+                alert('Veuillez saisir un email pour les alertes de stock.');
+                emailInput.focus();
+                return;
+            }
+
+            const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+            if (!emailPattern.test(emailAlerte)) {
+                alert('Veuillez saisir un email valide.');
+                emailInput.focus();
                 return;
             }
 

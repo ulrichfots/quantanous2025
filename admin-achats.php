@@ -83,13 +83,13 @@ pin_require($_SERVER['REQUEST_URI'] ?? 'admin-achats.php');
                     </div>
 
                     <div class="form-group">
-                        <input type="number" class="form-input" id="projectQuantity" name="quantite" placeholder="Quantité en stock" min="0" step="1" value="0">
-                        <p class="form-helper-text">Quantité disponible en stock (pour les alertes de réapprovisionnement)</p>
+                        <input type="number" class="form-input" id="projectQuantity" name="quantite" placeholder="Quantité en stock" min="0" step="1" value="0" required>
+                        <p class="form-helper-text">Quantité disponible en stock (obligatoire)</p>
                     </div>
 
                     <div class="form-group">
-                        <input type="email" class="form-input" id="projectEmail" name="email_alerte" placeholder="Remplir un mail existant et accessible" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
-                        <p class="form-helper-text">Email pour recevoir les alertes de stock faible (en dessous de 5 unités)</p>
+                        <input type="email" class="form-input" id="projectEmail" name="email_alerte" placeholder="Email pour les alertes de stock" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+                        <p class="form-helper-text">Email pour recevoir les alertes de stock faible (obligatoire)</p>
                     </div>
 
                     <div class="form-actions">
