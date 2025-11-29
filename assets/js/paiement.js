@@ -232,16 +232,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('📝 Formulaire soumis');
 
             if (!form.checkValidity()) {
+                console.warn('⚠️ Formulaire invalide');
                 form.reportValidity();
                 return;
             }
 
             if (!stripe) {
+                console.error('❌ Stripe non initialisé');
                 showMessage('Stripe n\'est pas initialisé. Veuillez rafraîchir la page.', true);
                 return;
             }
+            
+            console.log('✅ Stripe initialisé, variables:', { fromPage, articleId, montant });
             
             // Si le Payment Element n'est pas encore monté, on va le créer maintenant
             if (!paymentElementStripe) {
@@ -259,8 +264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const formData = new FormData(form);
 
             try {
+                console.log('🔄 Création du Payment Intent...');
                 // Créer le Payment Intent ou Setup Intent
                 const intentResult = await createPaymentIntent(formData);
+                console.log('✅ Payment Intent créé:', intentResult);
                 clientSecret = intentResult.client_secret;
                 const isSubscription = intentResult.is_subscription || false;
                 
@@ -364,6 +371,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             payerBtn.innerHTML = `PAYER <span id="montantDisplay">${montantDisplay.textContent}</span>`;
                         }
                     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                        console.log('✅ Paiement réussi! Status:', paymentIntent.status);
+                        console.log('📦 Données:', { fromPage, articleId, montant });
+                        
                         // Paiement réussi - compléter le paiement (stock + email)
                         try {
                             const completeData = {
@@ -381,6 +391,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 completeData.article_id = articleId;
                             }
                             
+                            console.log('📤 Envoi des données de complétion:', completeData);
+                            
                             const completeResponse = await fetch('api.php/complete-payment', {
                                 method: 'POST',
                                 headers: {
@@ -389,20 +401,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 body: JSON.stringify(completeData)
                             });
                             
+                            console.log('📥 Réponse reçue, status:', completeResponse.status);
+                            
                             const completeResult = await completeResponse.json();
+                            console.log('📋 Résultat:', completeResult);
+                            
                             if (completeResult.status === 'success') {
-                                console.log('Paiement complété:', completeResult);
+                                console.log('✅ Paiement complété:', completeResult);
                                 if (completeResult.stock_updated) {
-                                    console.log('Stock mis à jour:', completeResult.stock_result);
+                                    console.log('📦 Stock mis à jour:', completeResult.stock_result);
                                 }
                                 if (completeResult.email_sent) {
-                                    console.log('Email de reçu envoyé');
+                                    console.log('📧 Email de reçu envoyé');
+                                } else {
+                                    console.warn('⚠️ Email non envoyé');
                                 }
                             } else {
-                                console.error('Erreur lors de la complétion du paiement:', completeResult.message);
+                                console.error('❌ Erreur lors de la complétion du paiement:', completeResult.message);
                             }
                         } catch (completeError) {
-                            console.error('Erreur lors de l\'appel API de complétion du paiement:', completeError);
+                            console.error('❌ Erreur lors de l\'appel API de complétion du paiement:', completeError);
                             // Ne pas bloquer la redirection en cas d'erreur
                         }
                         
@@ -411,6 +429,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             window.location.href = 'index.php?status=success';
                         }, 1500);
                     } else {
+                        console.log('⚠️ Paiement non complété. Status:', paymentIntent?.status);
+                        console.log('📋 PaymentIntent:', paymentIntent);
                         showMessage('Le paiement nécessite une action supplémentaire.', true);
                         if (payerBtn) {
                             payerBtn.disabled = false;

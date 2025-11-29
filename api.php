@@ -1486,13 +1486,17 @@ if ($path === '/get-projects' && $method === 'GET') {
 
 // Route pour compléter un paiement (décrémenter le stock et envoyer l'email)
 if ($path === '/complete-payment' && $method === 'POST') {
+    error_log('📥 Route /complete-payment appelée');
     $input = json_decode(file_get_contents('php://input'), true);
+    error_log('📋 Données reçues: ' . json_encode($input));
     
     $articleId = $input['article_id'] ?? '';
     $customerEmail = $input['email'] ?? '';
     $customerName = trim(($input['prenom'] ?? '') . ' ' . ($input['nom'] ?? ''));
     $amount = isset($input['montant']) ? (float) $input['montant'] : 0;
     $type = $input['type'] ?? 'achat'; // 'achat' ou 'don_ponctuel'
+    
+    error_log("📊 Type: {$type}, Montant: {$amount}, Email: {$customerEmail}, Article ID: {$articleId}");
     
     // Décrémenter le stock si c'est un achat
     $stockUpdated = false;
