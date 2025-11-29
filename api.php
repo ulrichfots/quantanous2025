@@ -1572,9 +1572,27 @@ if ($path === '/complete-payment' && $method === 'POST') {
             'code_postal' => $input['code_postal'] ?? '',
             'ville' => $input['ville'] ?? '',
         ];
+        
+        // Récupérer les détails de l'article pour les inclure dans l'email
+        $lineItems = [];
         if ($type === 'achat' && !empty($articleId)) {
             $metadata['article_id'] = $articleId;
             $metadata['project_id'] = $articleId;
+            
+            // Récupérer les détails de l'article depuis Back4app
+            $projectResult = $back4app->getById('Project', $articleId);
+            if (($projectResult['success'] ?? false) && !empty($projectResult['data'])) {
+                $project = $projectResult['data'];
+                $projectTitle = $project['titre'] ?? 'Article';
+                $projectDescription = $project['description'] ?? '';
+                
+                // Créer un line item pour l'email
+                $lineItems[] = [
+                    'description' => $projectTitle . (!empty($projectDescription) ? ' - ' . $projectDescription : ''),
+                    'quantity' => 1,
+                    'amount_total' => (int) round($amount * 100), // Montant en centimes
+                ];
+            }
         }
         
         $emailSent = $emailHelper->sendReceipt([
@@ -1583,7 +1601,7 @@ if ($path === '/complete-payment' && $method === 'POST') {
             'amount' => $amount,
             'currency' => 'EUR',
             'metadata' => $metadata,
-            'line_items' => [],
+            'line_items' => $lineItems,
             'customer' => ['name' => $customerName, 'email' => $customerEmail],
         ]);
         
