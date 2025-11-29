@@ -90,8 +90,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             deliveryInfo.style.fontWeight = '600';
             deliveryInfo.style.display = 'block';
         } else if (deliveryInfo) {
-            // Masquer le message pour les commandes < 60€
-            deliveryInfo.style.display = 'none';
+            // Afficher le message pour les commandes < 60€
+            deliveryInfo.textContent = 'S\'ajouteront des frais de livraison selon le tarif en vigueur.';
+            deliveryInfo.style.color = '';
+            deliveryInfo.style.fontWeight = '';
+            deliveryInfo.style.display = 'block';
         }
         if (stripeInfo) {
             stripeInfo.textContent = 'Le paiement est sécurisé via Stripe. Remplissez vos informations ci-dessous.';
