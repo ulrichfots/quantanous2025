@@ -192,6 +192,7 @@ body {
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    position: relative; /* Nécessaire pour que sticky fonctionne */
 }
 
 .content-title {
@@ -203,11 +204,12 @@ body {
     position: sticky;
     top: calc(60px + 280px); /* Header + hauteur approximative de l'image (max-height: 300px) */
     background-color: var(--bg-color);
-    z-index: 5;
+    z-index: 10; /* Augmenté pour être au-dessus de la pagination */
     padding-top: 16px;
     padding-bottom: 8px;
     margin-top: 0;
     margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Ombre légère pour mieux le distinguer */
 }
 
 .content-text {

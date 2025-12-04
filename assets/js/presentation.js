@@ -38,30 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalContent = contentContainer.cloneNode(true);
         const originalHTML = contentContainer.innerHTML;
         
-        // Récupérer tous les éléments enfants (paragraphes, images, divs, listes, etc.)
-        const allElements = Array.from(originalContent.childNodes).filter(node => {
-            // Filtrer les nœuds texte vides et garder les éléments HTML
-            if (node.nodeType === Node.TEXT_NODE) {
-                return node.textContent.trim().length > 0;
-            }
-            return node.nodeType === Node.ELEMENT_NODE;
-        });
-        
-        if (allElements.length === 0) {
-            // Si pas d'éléments, vérifier le contenu texte
-            const textContent = contentContainer.textContent || contentContainer.innerText;
-            if (textContent.trim().length === 0) {
-                paginationContainer.style.display = 'none';
-                return; // Pas de contenu
-            }
-        }
-
-        // Vider le conteneur temporairement pour mesurer
-        contentContainer.innerHTML = '';
-
-        // Créer les pages
-        let currentPageContent = [];
-        let currentHeight = 0;
+        // Créer un div temporaire pour mesurer (doit être créé avant splitParagraphIntoChunks)
         let tempDiv = document.createElement('div');
         tempDiv.style.visibility = 'hidden';
         tempDiv.style.position = 'absolute';
@@ -73,45 +50,136 @@ document.addEventListener('DOMContentLoaded', () => {
         tempDiv.style.fontSize = computedStyle.fontSize;
         tempDiv.style.lineHeight = computedStyle.lineHeight;
         document.body.appendChild(tempDiv);
-
-        // Traiter chaque élément (paragraphes, images, divs, listes, etc.)
-        allElements.forEach((element, index) => {
-            let elementClone;
-            let elementHeight = 0;
+        
+        // Fonction pour diviser un paragraphe en plusieurs paragraphes plus petits
+        function splitParagraphIntoChunks(para) {
+            const chunks = [];
+            const text = para.textContent || para.innerText;
             
+            // Si le paragraphe contient des <br>, diviser par <br>
+            if (para.innerHTML && para.innerHTML.includes('<br')) {
+                // Diviser en préservant le HTML
+                const htmlContent = para.innerHTML;
+                const parts = htmlContent.split(/<br\s*\/?>/i);
+                parts.forEach((part, index) => {
+                    const trimmed = part.trim();
+                    if (trimmed) {
+                        const p = document.createElement('p');
+                        // Préserver le HTML original
+                        p.innerHTML = trimmed;
+                        chunks.push(p);
+                    } else if (index === 0 && parts.length > 1) {
+                        // Si la première partie est vide mais qu'il y a d'autres parties, créer un paragraphe vide
+                        const p = document.createElement('p');
+                        p.innerHTML = '&nbsp;';
+                        chunks.push(p);
+                    }
+                });
+            } else {
+                // Sinon, diviser par phrases (point suivi d'un espace ou virgule)
+                const sentences = text.split(/(?<=[.!?,])\s+/);
+                let currentChunk = '';
+                
+                sentences.forEach(sentence => {
+                    const testChunk = currentChunk + (currentChunk ? ' ' : '') + sentence;
+                    const testP = document.createElement('p');
+                    testP.textContent = testChunk;
+                    tempDiv.appendChild(testP);
+                    const testHeight = tempDiv.offsetHeight;
+                    tempDiv.removeChild(testP);
+                    
+                    // Si le chunk dépasse la limite, sauvegarder le précédent et commencer un nouveau
+                    if (testHeight > MAX_HEIGHT_PER_PAGE * 0.8 && currentChunk) {
+                        const p = document.createElement('p');
+                        p.textContent = currentChunk;
+                        chunks.push(p);
+                        currentChunk = sentence;
+                    } else {
+                        currentChunk = testChunk;
+                    }
+                });
+                
+                if (currentChunk) {
+                    const p = document.createElement('p');
+                    p.textContent = currentChunk;
+                    chunks.push(p);
+                }
+            }
+            
+            return chunks.length > 0 ? chunks : [para];
+        }
+        
+        // Récupérer tous les éléments enfants
+        const allElements = Array.from(originalContent.childNodes).filter(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return node.textContent.trim().length > 0;
+            }
+            return node.nodeType === Node.ELEMENT_NODE;
+        });
+        
+        if (allElements.length === 0) {
+            const textContent = contentContainer.textContent || contentContainer.innerText;
+            if (textContent.trim().length === 0) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+        }
+
+        // Vider le conteneur temporairement pour mesurer
+        contentContainer.innerHTML = '';
+
+        // Traiter chaque élément et diviser les gros paragraphes
+        let processedElements = [];
+        allElements.forEach((element) => {
             if (element.nodeType === Node.TEXT_NODE) {
-                // Pour les nœuds texte, créer un paragraphe
                 const p = document.createElement('p');
                 p.textContent = element.textContent;
-                elementClone = p;
+                processedElements.push(...splitParagraphIntoChunks(p));
+            } else if (element.tagName === 'P') {
+                // Si c'est un paragraphe, vérifier s'il est trop long
+                tempDiv.appendChild(element.cloneNode(true));
+                const paraHeight = tempDiv.offsetHeight;
+                tempDiv.removeChild(tempDiv.firstChild);
+                
+                if (paraHeight > MAX_HEIGHT_PER_PAGE * 0.8) {
+                    // Diviser le paragraphe
+                    processedElements.push(...splitParagraphIntoChunks(element));
+                } else {
+                    processedElements.push(element);
+                }
             } else {
-                elementClone = element.cloneNode(true);
+                // Pour les autres éléments (images, divs, etc.), les garder tels quels
+                processedElements.push(element);
             }
+        });
+
+        // Créer les pages à partir des éléments traités
+        let currentPageContent = [];
+        let currentHeight = 0;
+
+        processedElements.forEach((element) => {
+            const elementClone = element.cloneNode(true);
             
             // Mesurer la hauteur de l'élément
             const previousHeight = tempDiv.offsetHeight;
             tempDiv.appendChild(elementClone);
             
-            // Si c'est une image, attendre qu'elle soit chargée
+            // Gérer les images
             const images = elementClone.querySelectorAll('img');
             if (images.length > 0) {
-                // Pour les images, on attend qu'elles soient chargées
-                // Mais pour la pagination, on utilise une hauteur approximative
                 images.forEach(img => {
                     if (!img.complete) {
-                        // Si l'image n'est pas chargée, utiliser une hauteur par défaut
                         img.style.height = 'auto';
                     }
                 });
             }
             
             const newHeight = tempDiv.offsetHeight;
-            elementHeight = Math.max(newHeight - previousHeight, 50); // Minimum 50px pour éviter les erreurs
+            const elementHeight = Math.max(newHeight - previousHeight, 50);
             tempDiv.removeChild(elementClone);
 
             // Si ajouter cet élément dépasse la hauteur max, créer une nouvelle page
             if (currentHeight + elementHeight > MAX_HEIGHT_PER_PAGE && currentPageContent.length > 0) {
-                // Sauvegarder la page actuelle
                 pages.push([...currentPageContent]);
                 currentPageContent = [];
                 currentHeight = 0;
