@@ -122,5 +122,6 @@
     </script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/install.js"></script>
+    <script src="assets/js/presentation.js"></script>
 </body>
 </html>

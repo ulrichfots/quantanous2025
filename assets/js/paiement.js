@@ -84,20 +84,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else if (fromPage === 'achats') {
         const montantValue = parseFloat(montant);
-        if (deliveryInfo && montantValue > 60) {
-            deliveryInfo.textContent = 'Livraison gratuite pour les commandes supérieures à 60 €';
-            deliveryInfo.style.color = '#2E7D32';
-            deliveryInfo.style.fontWeight = '600';
-            deliveryInfo.style.display = 'block';
-        } else if (deliveryInfo) {
-            // Afficher le message pour les commandes < 60€
-            deliveryInfo.textContent = 'S\'ajouteront des frais de livraison selon le tarif en vigueur.';
-            deliveryInfo.style.color = '';
-            deliveryInfo.style.fontWeight = '';
-            deliveryInfo.style.display = 'block';
+        console.log('💰 Montant de la commande:', montantValue, 'fromPage:', fromPage);
+        if (deliveryInfo) {
+            if (montantValue > 60) {
+                deliveryInfo.textContent = 'Livraison gratuite pour les commandes supérieures à 60 €';
+                deliveryInfo.style.color = '#2E7D32';
+                deliveryInfo.style.fontWeight = '600';
+                deliveryInfo.style.display = 'block';
+            } else {
+                // Afficher le message pour les commandes < 60€
+                deliveryInfo.textContent = 'S\'ajouteront des frais de livraison selon le tarif en vigueur.';
+                deliveryInfo.style.color = '';
+                deliveryInfo.style.fontWeight = '';
+                deliveryInfo.style.display = 'block';
+                console.log('✅ Message de frais de livraison affiché');
+            }
+        } else {
+            console.warn('⚠️ deliveryInfo non trouvé');
         }
         if (stripeInfo) {
             stripeInfo.textContent = 'Le paiement est sécurisé via Stripe. Remplissez vos informations ci-dessous.';
+        }
+    } else {
+        // Par défaut, afficher le message de frais de livraison si c'est un achat
+        if (deliveryInfo && !fromPage) {
+            // Si pas de fromPage défini, on affiche par défaut
+            deliveryInfo.style.display = 'block';
         }
     }
 

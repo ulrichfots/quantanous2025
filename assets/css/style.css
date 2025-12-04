@@ -222,6 +222,42 @@ body {
     text-align: justify;
 }
 
+.content-text img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 16px 0;
+}
+
+.content-text div,
+.content-text section,
+.content-text article {
+    margin-bottom: 16px;
+}
+
+/* Pagination pour la page Présentation */
+.content-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 16px;
+    border-top: 1px solid #E0E0E0;
+    background-color: var(--bg-color);
+    position: sticky;
+    bottom: 80px; /* Au-dessus de la barre de navigation */
+    z-index: 5;
+}
+
+.content-page {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.content-page.active {
+    display: block;
+}
+
 /* Barre de navigation inférieure */
 .bottom-nav {
     position: fixed;
@@ -1509,6 +1545,21 @@ body {
 
     .content-text {
         font-size: 14px;
+    }
+
+    .content-pagination {
+        bottom: 80px;
+        padding: 12px;
+        margin-top: 16px;
+    }
+
+    .content-pagination .pagination-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .content-pagination .pagination-info {
+        font-size: 12px;
     }
 
     .nav-label {

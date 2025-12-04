@@ -1,23 +1,42 @@
-// Gestion spécifique de la page Aide avec pagination automatique
+// Gestion de la pagination pour la page Présentation
 document.addEventListener('DOMContentLoaded', () => {
-    const contentContainer = document.getElementById('aideContent');
-    const paginationContainer = document.getElementById('aidePagination');
-    const prevBtn = document.getElementById('paginationPrev');
-    const nextBtn = document.getElementById('paginationNext');
-    const infoSpan = document.getElementById('paginationInfo');
-
-    if (!contentContainer || !paginationContainer) {
+    const contentContainer = document.querySelector('.content-text');
+    const contentSection = document.querySelector('.content-section');
+    
+    if (!contentContainer || !contentSection) {
         return;
     }
 
+    // Créer le conteneur de pagination
+    const paginationContainer = document.createElement('div');
+    paginationContainer.className = 'content-pagination';
+    paginationContainer.id = 'contentPagination';
+    paginationContainer.innerHTML = `
+        <button class="pagination-btn pagination-prev" id="contentPaginationPrev" style="display: none;">
+            ‹ Précédent
+        </button>
+        <span class="pagination-info" id="contentPaginationInfo"></span>
+        <button class="pagination-btn pagination-next" id="contentPaginationNext" style="display: none;">
+            Suivant ›
+        </button>
+    `;
+    
+    // Insérer la pagination après le contenu
+    contentContainer.parentNode.insertBefore(paginationContainer, contentContainer.nextSibling);
+    
+    const prevBtn = document.getElementById('contentPaginationPrev');
+    const nextBtn = document.getElementById('contentPaginationNext');
+    const infoSpan = document.getElementById('contentPaginationInfo');
+
     // Hauteur maximale par page (en pixels) - ajustable selon les besoins
-    const MAX_HEIGHT_PER_PAGE = window.innerHeight * 0.6; // 60% de la hauteur de l'écran
+    const MAX_HEIGHT_PER_PAGE = window.innerHeight * 0.5; // 50% de la hauteur de l'écran
     let currentPage = 0;
     let pages = [];
 
     function createPagination() {
         // Cloner le contenu original
         const originalContent = contentContainer.cloneNode(true);
+        const originalHTML = contentContainer.innerHTML;
         
         // Récupérer tous les éléments enfants (paragraphes, images, divs, listes, etc.)
         const allElements = Array.from(originalContent.childNodes).filter(node => {
@@ -38,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Vider le conteneur temporairement pour mesurer
-        const originalHTML = contentContainer.innerHTML;
         contentContainer.innerHTML = '';
 
         // Créer les pages
@@ -134,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Créer un conteneur pour la page
         const pageDiv = document.createElement('div');
-        pageDiv.className = 'aide-content-page active';
+        pageDiv.className = 'content-page active';
         pages[currentPage].forEach(element => {
             if (element.nodeType === Node.TEXT_NODE) {
                 // Pour les nœuds texte, créer un paragraphe
@@ -148,12 +166,21 @@ document.addEventListener('DOMContentLoaded', () => {
         contentContainer.appendChild(pageDiv);
 
         // Mettre à jour les boutons
-        prevBtn.style.display = currentPage > 0 ? 'block' : 'none';
-        nextBtn.style.display = currentPage < pages.length - 1 ? 'block' : 'none';
-        infoSpan.textContent = `Page ${currentPage + 1} / ${pages.length}`;
+        if (prevBtn) {
+            prevBtn.style.display = currentPage > 0 ? 'block' : 'none';
+        }
+        if (nextBtn) {
+            nextBtn.style.display = currentPage < pages.length - 1 ? 'block' : 'none';
+        }
+        if (infoSpan) {
+            infoSpan.textContent = `Page ${currentPage + 1} / ${pages.length}`;
+        }
 
         // Scroll vers le haut du contenu
-        contentContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const title = document.querySelector('.content-title');
+        if (title) {
+            title.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     // Event listeners
