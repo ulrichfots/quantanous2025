@@ -203,13 +203,13 @@ body {
 /* Section de contenu */
 .content-section {
     background-color: var(--bg-color);
-    padding: 20px 16px 100px;
+    padding: 20px 16px 160px; /* Plus de padding en bas pour laisser place à la pagination fixe */
     max-width: 100%;
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    position: relative; /* Nécessaire pour que sticky fonctionne */
+    position: relative;
     margin-top: 0; /* Pas de marge en haut car l'image est sticky */
 }
 
@@ -249,9 +249,12 @@ body {
     padding: 16px;
     border-top: 1px solid #E0E0E0;
     background-color: var(--bg-color);
-    position: sticky;
+    position: fixed; /* Fixe au lieu de sticky pour rester toujours visible */
     bottom: 80px; /* Au-dessus de la barre de navigation */
-    z-index: 5;
+    left: 0;
+    right: 0;
+    z-index: 10; /* Au-dessus du contenu */
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* Ombre pour mieux le distinguer */
 }
 
 .content-page {
