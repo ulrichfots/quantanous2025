@@ -56,14 +56,16 @@
 
     <!-- Contenu principal -->
     <main class="main-content">
-        <!-- Section graphique -->
+        <!-- Section graphique avec titre -->
         <div class="graphic-section">
-            <img src="assets/icons/photobackground.JPG" alt="quantanous 2025" class="graphic-image">
+            <div class="graphic-image-container">
+                <img src="assets/icons/photobackground.JPG" alt="quantanous 2025" class="graphic-image">
+            </div>
+            <h1 class="graphic-title">Association quantanous</h1>
         </div>
 
         <!-- Section de contenu -->
         <div class="content-section">
-            <h1 class="content-title">L'association</h1>
             <div class="content-text">
                 <?php
                 require_once 'load-content.php';
